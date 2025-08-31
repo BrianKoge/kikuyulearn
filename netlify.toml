@@ -1,5 +1,5 @@
 [build]
-  publish = "Html"
+  publish = "."
   base = "."
 
 # Handle SPA routing
