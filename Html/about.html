@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Kikuyulearn | Cultural Preservation Through Technology</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Kikuyulearn</span>
+            </div>
+            
+            <!-- Hamburger Menu Button -->
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="./index.html#home" class="nav-link" onclick="closeMenu()">Home</a>
+                <a href="./index.html#features" class="nav-link" onclick="closeMenu()">Features</a>
+                <a href="./about.html" class="nav-link" onclick="closeMenu()">About</a>
+                <a href="./contact.html" class="nav-link" onclick="closeMenu()">Contact</a>
+            </div>
+            <div class="nav-buttons" id="navButtons">
+                <button class="btn btn-outline" onclick="showLoginModal()">Login</button>
+                <button class="btn btn-primary" onclick="showSignupModal()">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <div class="about-hero-content">
+                <h1>About Kikuyulearn</h1>
+                <p class="hero-subtitle">Connecting people to their cultural roots through innovative technology</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">1</span>
+                        <span class="stat-label">Language</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100+</span>
+                        <span class="stat-label">Lessons</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">∞</span>
+                        <span class="stat-label">Possibilities</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>The Journey Begins</h2>
+                    <p class="story-intro">
+                        Kikuyulearn started as a simple idea - a web app to help people like me reconnect with our Kikuyu roots. 
+                        Growing up, I felt disconnected from my cultural heritage, and I wanted to create a platform that would 
+                        make learning our language and traditions accessible to everyone.
+                    </p>
+                    
+                    <div class="story-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h3>The Idea</h3>
+                                <p>Born from a personal desire to reconnect with Kikuyu culture and language, the concept of Kikuyulearn emerged as a way to bridge the gap between traditional knowledge and modern technology.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h3>Development</h3>
+                                <p>Using modern web technologies, I began building an interactive platform that would make learning Kikuyu engaging, accessible, and culturally authentic.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h3>Community</h3>
+                                <p>As the platform grew, it became clear that this was more than just a language learning app - it was a community of people passionate about preserving their cultural heritage.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="fas fa-globe-africa"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h3>Expansion</h3>
+                                <p>Looking to the future, we envision expanding beyond Kikuyu to include other Kenyan tribal languages, creating a comprehensive platform for African cultural preservation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section class="founder-section">
+        <div class="container">
+            <div class="founder-content">
+                <div class="founder-profile">
+                    <div class="founder-image-container">
+                        <div class="founder-image">
+                            <img src="../assets/founder-placeholder.jpg" alt="Brian Koge - Founder" />
+                        </div>
+                        <div class="founder-badge">
+                            <i class="fas fa-crown"></i>
+                            <span>Founder</span>
+                        </div>
+                    </div>
+                    
+                    <div class="founder-info">
+                        <h2 class="founder-name">Brian Koge</h2>
+                        <p class="founder-title">web programmer</p>
+                        <p class="founder-bio">
+                            I'm passionate about using technology to preserve and promote African cultures. This project represents 
+                            my commitment to ensuring that our rich cultural heritage continues to thrive in the digital age. 
+                            Through Kikuyulearn, I hope to inspire others to reconnect with their roots and contribute to the 
+                            preservation of our diverse cultural traditions.
+                        </p>
+                        
+                        <div class="founder-expertise">
+                            <h3>Areas of Expertise</h3>
+                            <div class="expertise-tags">
+                                <span class="tag">Web Development</span>
+                                <span class="tag">Cultural Preservation</span>
+                                <span class="tag">Language Learning</span>
+                                <span class="tag">Community Building</span>
+                                <span class="tag">African Heritage</span>
+                            </div>
+                        </div>
+                        
+                        <div class="founder-social">
+                            
+                            <a href="https://github.com/BrianKoge" class="social-link" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            
+                            </a>
+                            <a href="brnkoge@gmail.com" class="social-link" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission & Vision Section -->
+    <section class="mission-vision-section">
+        <div class="container">
+            <div class="mission-vision-grid">
+                <div class="mission-card">
+                    <div class="card-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Our Mission</h3>
+                    <p>To preserve and promote African cultural heritage through innovative technology, making traditional languages and customs accessible to modern learners while fostering a sense of pride and connection to our roots.</p>
+                </div>
+                
+                <div class="vision-card">
+                    <div class="card-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3>Our Vision</h3>
+                    <p>To become the leading platform for African language learning, connecting millions of people to their cultural heritage and creating a global community of cultural preservation advocates.</p>
+                </div>
+                
+                <div class="values-card">
+                    <div class="card-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3>Our Values</h3>
+                    <ul class="values-list">
+                        <li><i class="fas fa-check"></i> Cultural Authenticity</li>
+                        <li><i class="fas fa-check"></i> Technological Innovation</li>
+                        <li><i class="fas fa-check"></i> Community Engagement</li>
+                        <li><i class="fas fa-check"></i> Inclusivity & Accessibility</li>
+                        <li><i class="fas fa-check"></i> Preservation of Heritage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Welcome Back</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+            <p class="auth-footer">
+                Don't have an account? <a href="#" onclick="switchModal('loginModal', 'signupModal')">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            <h2>Join Kikuyulearn</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="#" onclick="switchModal('signupModal', 'loginModal')">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Kikuyulearn</h3>
+                    <p>Preserving and sharing the rich Kikuyu culture and language for future generations.</p>
+                </div>
+                 <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="./index.html#home">Home</a></li>
+                        <li><a href="./about.html">About</a></li>
+                        <li><a href="./index.html#features">Features</a></li>
+                        <li><a href="./contact.html">contact</a></li>               
+                
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="./contact.html">Contact Us</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://github.com/BrianKoge"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Kikuyulearn. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/script-simple.js"></script>
+    <script>
+        // Mobile menu functionality
+        function toggleMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const navButtons = document.getElementById('navButtons');
+            const hamburger = document.querySelector('.hamburger');
+            
+            navMenu.classList.toggle('active');
+            navButtons.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+        
+        function closeMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const navButtons = document.getElementById('navButtons');
+            const hamburger = document.querySelector('.hamburger');
+            
+            navMenu.classList.remove('active');
+            navButtons.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.querySelector('.navbar');
+            const hamburger = document.querySelector('.hamburger');
+            
+            if (!navbar.contains(event.target) && !hamburger.contains(event.target)) {
+                closeMenu();
+            }
+        });
+    </script>
+</body>
+</html>

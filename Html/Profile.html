@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Kikuyulearn</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-container {
+            padding-top: 100px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light-gray) 0%, #e9ecef 100%);
+        }
+        
+        .profile-header {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 3rem;
+            border: 4px solid var(--white);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-black);
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-email {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            display: block;
+        }
+        
+        .stat-label {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+        
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .profile-section {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--secondary-black);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #f3f4f6;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-orange), #ff8c42);
+            border-radius: 1px;
+        }
+        
+        .section-title i {
+            color: var(--primary-orange);
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 140, 0, 0.05));
+            padding: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .section-title:hover i {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2), rgba(255, 140, 0, 0.1));
+        }
+        
+
+        
+
+        
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            position: relative;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: var(--secondary-black);
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+            position: relative;
+        }
+        
+        .form-group label::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-orange), #ff8c42);
+            transition: width 0.3s ease;
+        }
+        
+        .form-group:focus-within label::after {
+            width: 100%;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 1rem 1.2rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group input:hover,
+        .form-group select:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .form-group input:disabled:hover,
+        .form-group select:disabled:hover {
+            border-color: #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transform: none;
+        }
+        
+
+        
+        .badge-collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+        
+        .badge {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            border-radius: 18px;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #e9ecef;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 140, 0, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .badge:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-orange);
+        }
+        
+        .badge:hover::before {
+            opacity: 1;
+        }
+        
+        .badge-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+            transition: all 0.4s ease;
+        }
+        
+        .badge:hover .badge-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        .badge-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--secondary-black);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover .badge-title {
+            color: var(--primary-orange);
+            font-weight: 700;
+        }
+        
+        .edit-profile-btn {
+            background: linear-gradient(135deg, var(--primary-orange), #ff8c42);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .edit-profile-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .edit-profile-btn:hover {
+            background: linear-gradient(135deg, var(--primary-orange-dark), var(--primary-orange));
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
+        }
+        
+        .edit-profile-btn:hover::before {
+            left: 100%;
+        }
+        
+        .edit-profile-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+        }
+        
+        .edit-profile-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .edit-profile-btn:disabled:hover {
+            background: #d1d5db;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .edit-profile-btn:disabled::before {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Kikuyulearn</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="Lessons.html" class="nav-link">Lessons</a>
+                <a href="leaderboard.html" class="nav-link">Leaderboard</a>
+                <a href="Profile.html" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-buttons">
+                <span class="user-welcome">Welcome, Learner!</span>
+                <button class="btn btn-outline" onclick="signOut()">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">L</div>
+                <h1 class="profile-name" id="profileName">Learning User</h1>
+                <p class="profile-email" id="profileEmail">learner@kikuyulearn.com</p>
+                
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">45</span>
+                        <span class="stat-label">Lessons Completed</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">1,847</span>
+                        <span class="stat-label">Total Points</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label">Day Streak</span>
+                    </div>
+
+                </div>
+                
+                <button class="edit-profile-btn" onclick="editProfile()">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Badge Collection -->
+                    <div class="profile-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-medal"></i>
+                            Badge Collection
+                        </h2>
+                        
+                        <div class="badge-collection">
+                            <div class="badge">
+                                <div class="badge-icon">🔥</div>
+                                <div class="badge-title">Streak Master</div>
+                            </div>
+                            <div class="badge">
+                                <div class="badge-icon">📚</div>
+                                <div class="badge-title">Bookworm</div>
+                            </div>
+                            <div class="badge">
+                                <div class="badge-icon">⭐</div>
+                                <div class="badge-title">Perfect Score</div>
+                            </div>
+                            <div class="badge">
+                                <div class="badge-icon">🤝</div>
+                                <div class="badge-title">Helper</div>
+                            </div>
+                            <div class="badge">
+                                <div class="badge-icon">🌅</div>
+                                <div class="badge-title">Early Bird</div>
+                            </div>
+                            <div class="badge">
+                                <div class="badge-icon">🎯</div>
+                                <div class="badge-title">Focused</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Account Settings -->
+                    <div class="profile-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-cog"></i>
+                            Account Settings
+                        </h2>
+                        
+                        <form class="settings-form" onsubmit="saveProfileChanges(); return false;">
+                            <div class="form-group">
+                                <label for="displayName">Display Name</label>
+                                <input type="text" id="displayName" value="Learning User" disabled>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" value="learner@kikuyulearn.com" disabled>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="language">Preferred Language</label>
+                                <select id="language" disabled>
+                                    <option value="en">English</option>
+                                    <option value="sw">Swahili</option>
+                                    <option value="ki">Kikuyu</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notifications">Email Notifications</label>
+                                <select id="notifications" disabled>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                            
+                            <button type="button" class="edit-profile-btn" onclick="editProfile()" id="editProfileBtn">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                            
+                            <button type="submit" class="save-profile-btn" disabled id="saveProfileBtn">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/script-simple.js"></script>
+    <script src="../js/profile.js"></script>
+
+</body>
+</html>

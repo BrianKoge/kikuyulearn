@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kikuyulearn - Learn Kikuyu Culture & Language</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Kikuyulearn</span>
+            </div>
+            
+            <!-- Hamburger Menu Button -->
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="./index.html#home" class="nav-link" onclick="closeMenu()">Home</a>
+                <a href="./index.html#features" class="nav-link" onclick="closeMenu()">Features</a>
+                <a href="./about.html" class="nav-link" onclick="closeMenu()">About</a>
+                <a href="./contact.html" class="nav-link" onclick="closeMenu()">Contact</a>
+            </div>
+            <div class="nav-buttons" id="navButtons">
+                <button class="btn btn-outline" onclick="showLoginModal()">Login</button>
+                <button class="btn btn-primary" onclick="showSignupModal()">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Discover the Rich <span class="highlight">Kikuyu Culture</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Learn the Kikuyu language, traditions, and heritage through interactive lessons, 
+                    cultural stories, and engaging activities. Connect with your roots and preserve 
+                    the wisdom of generations.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large" onclick="showSignupModal()">
+                        <i class="fas fa-play"></i>
+                        Start Learning
+                    </button>
+                    <button class="btn btn-outline btn-large" onclick="scrollToFeatures()">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+
+            </div>
+            <div class="hero-image">
+                <div class="hero-visual">
+                    <div class="floating-card card-1">
+                        <i class="fas fa-book"></i>
+                        <span>Language</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="fas fa-users"></i>
+                        <span>Community</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="fas fa-heart"></i>
+                        <span>Culture</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Kikuyulearn?</h2>
+                <p>Experience the best way to learn Kikuyu culture and language</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Interactive Lessons</h3>
+                    <p>Learn through engaging multimedia content, quizzes, and real-world conversations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community Learning</h3>
+                    <p>Connect with fellow learners, share experiences, and practice together.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>Gamified Experience</h3>
+                    <p>Earn points, unlock achievements, and compete on leaderboards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Learn Anywhere</h3>
+                    <p>Access lessons on any device, anytime, anywhere with offline capabilities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Cultural Heritage</h3>
+                    <p>Discover traditional stories, customs, and historical significance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your learning journey with detailed analytics and insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Start Your Kikuyu Journey?</h2>
+                <p>Join thousands of learners discovering their cultural heritage</p>
+                <button class="btn btn-primary btn-large" onclick="showSignupModal()">
+                    <i class="fas fa-rocket"></i>
+                    Get Started Free
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Welcome Back</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+            <p class="auth-footer">
+                Don't have an account? <a href="#" onclick="switchModal('loginModal', 'signupModal')">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            <h2>Join Kikuyulearn</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="#" onclick="switchModal('signupModal', 'loginModal')">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Kikuyulearn</h3>
+                    <p>Preserving and sharing the rich Kikuyu culture and language for future generations.</p>
+                </div>
+                 <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="./index.html#home">Home</a></li>
+                        <li><a href="./about.html">About</a></li>
+                        <li><a href="./index.html#features">Features</a></li>
+                        <li><a href="./contact.html">contact</a></li>               
+                
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="./contact.html">Contact Us</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://github.com/BrianKoge"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Kikuyulearn. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/script-simple.js"></script>
+    <script>
+        // Mobile menu functionality
+        function toggleMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const navButtons = document.getElementById('navButtons');
+            const hamburger = document.querySelector('.hamburger');
+            
+            navMenu.classList.toggle('active');
+            navButtons.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+        
+        function closeMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const navButtons = document.getElementById('navButtons');
+            const hamburger = document.querySelector('.hamburger');
+            
+            navMenu.classList.remove('active');
+            navButtons.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+        
+        // Smooth scrolling for Learn More button
+        function scrollToFeatures() {
+            const featuresSection = document.getElementById('features');
+            featuresSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.querySelector('.navbar');
+            const hamburger = document.querySelector('.hamburger');
+            
+            if (!navbar.contains(event.target) && !hamburger.contains(event.target)) {
+                closeMenu();
+            }
+        });
+    </script>
+</body>
+</html>

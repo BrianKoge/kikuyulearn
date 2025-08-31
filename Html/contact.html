@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Kikuyulearn | Get in Touch & Support Our Mission</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Kikuyulearn</span>
+            </div>
+            
+            <!-- Hamburger Menu Button -->
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="./index.html#home" class="nav-link" onclick="closeMenu()">Home</a>
+                <a href="./index.html#features" class="nav-link" onclick="closeMenu()">Features</a>
+                <a href="./about.html" class="nav-link" onclick="closeMenu()">About</a>
+                <a href="./contact.html" class="nav-link" onclick="closeMenu()">Contact</a>
+            </div>
+            <div class="nav-buttons" id="navButtons">
+                <button class="btn btn-outline" onclick="showLoginModal()">Login</button>
+                <button class="btn btn-primary" onclick="showSignupModal()">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Support Section -->
+    <section class="support-section">
+        <div class="container">
+            <div class="support-content">
+              
+                
+                <div class="join-us-section">
+                    <h3>Join Us in Making a Difference</h3>
+                    <p>Every contribution helps us move closer to our vision of preserving Kenyan cultural heritage for future generations.</p>
+                    
+                    <button class="btn btn-primary btn-large join-us-btn" onclick="openPaystack()">
+                        <i class="fas fa-heart"></i>
+                        Join Us & Support Our Cause
+                    </button>
+                    
+
+                    
+                    <p class="support-note">
+                        <i class="fas fa-shield-alt"></i>
+                        Secure payment powered by Paystack
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section class="contact-form-section">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>Let's Connect</h2>
+                    <p>We're here to help and answer any questions you might have about Kikuyulearn or our mission to preserve African cultural heritage.</p>
+                    
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Email Us</h3>
+                                <p>brnkoge@gmail.com</p>
+                                <span>We'll respond within 24 hours</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Our Location</h3>
+                                <p>Nairobi, Kenya</p>
+                                <span>Heart of East Africa</span>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Response Time</h3>
+                                <p>Within 24 hours</p>
+                                <span>Monday - Friday</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form-container">
+                    <form class="contact-form" id="contactForm">
+                        <h3>Send us a Message</h3>
+                        
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Subject *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="support">Technical Support</option>
+                                <option value="feedback">Feedback & Suggestions</option>
+                                <option value="partnership">Partnership Opportunities</option>
+                                <option value="donation">Donation & Support</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message *</label>
+                            <textarea id="message" name="message" rows="6" required placeholder="Tell us how we can help you..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Kikuyulearn</h3>
+                    <p>Preserving and sharing the rich Kikuyu culture and language for future generations.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="./index.html#home">Home</a></li>
+                        <li><a href="./about.html">About</a></li>
+                        <li><a href="./index.html#features">Features</a></li>
+                        <li><a href="./contact.html">contact</a></li>               
+                
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="./contact.html">Contact Us</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://github.com/BrianKoge"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Kikuyulearn. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Paystack Script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/script-simple.js"></script>
+    <script>
+        // Test function to verify button is clickable
+        function testButton() {
+            console.log('Button clicked!');
+            alert('Button is working!');
+        }
+        
+        // Contact form handling
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Show success message
+            showSuccessMessage('Thank you for your message! We\'ll get back to you within 24 hours.');
+            
+            // Reset form
+            this.reset();
+        });
+
+                // Paystack integration
+        function openPaystack() {
+            // Check if PaystackPop is available
+            if (typeof PaystackPop === 'undefined') {
+                showErrorMessage('Paystack is not loaded. Please refresh the page and try again.');
+                return;
+            }
+            
+                         // Simple Paystack configuration
+             const handler = PaystackPop.setup({
+                 key: 'pk_live_213ea28caffedd5ca6ef1a36b235d421a1ae3ea0',
+                 email: 'donor@example.com',
+                 amount: 25000, // Amount in cents (250 KES = 25000 cents)
+                 currency: 'KES', // Use Kenyan Shillings
+                 ref: 'KIKUYU_' + Date.now(),
+    callback: function(response) {
+        console.log('Payment successful:', response);
+        showSuccessMessage('Thank you for your donation! Your support helps preserve Kenyan cultural heritage.');
+        
+        // Redirect to success page
+        const successUrl = window.location.origin + '/payment-success.html' + 
+            '?transaction_id=' + response.reference +
+            '&amount=' + (response.amount / 100) +
+            '&status=success';
+        window.location.href = successUrl;
+    },
+    onClose: function() {
+        console.log('Payment modal closed');
+        showErrorMessage('Payment was cancelled. Please try again when you\'re ready.');
+    }
+});
+            
+            try {
+                handler.openIframe();
+            } catch (error) {
+                console.error('Paystack error:', error);
+                showErrorMessage('Payment initialization failed. Please try again.');
+            }
+        }
+
+                 // Success message function
+         function showSuccessMessage(message) {
+             const successDiv = document.createElement('div');
+             successDiv.className = 'success-message';
+             successDiv.textContent = message;
+             successDiv.style.cssText = `
+                 position: fixed;
+                 top: 20px;
+                 right: 20px;
+                 background: #27ae60;
+                 color: white;
+                 padding: 1rem 2rem;
+                 border-radius: 8px;
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                 z-index: 10001;
+                 animation: slideIn 0.3s ease;
+                 font-weight: 600;
+                 font-size: 1rem;
+                 max-width: 400px;
+                 word-wrap: break-word;
+             `;
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(successDiv);
+                }, 300);
+            }, 5000);
+        }
+
+                 // Error message function
+         function showErrorMessage(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.className = 'error-message';
+             errorDiv.textContent = message;
+             errorDiv.style.cssText = `
+                 position: fixed;
+                 top: 20px;
+                 right: 20px;
+                 background: #e74c3c;
+                 color: white;
+                 padding: 1rem 2rem;
+                 border-radius: 8px;
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                 z-index: 10001;
+                 animation: slideIn 0.3s ease;
+                 font-weight: 600;
+                 font-size: 1rem;
+                 max-width: 400px;
+                 word-wrap: break-word;
+             `;
+            
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(errorDiv);
+                }, 300);
+            }, 5000);
+        }
+
+        // Alternative donation form
+        function showDonationForm() {
+            console.log('showDonationForm called'); // Debug log
+            const formHTML = `
+                                 <div class="donation-modal" style="
+                     position: fixed;
+                     top: 0;
+                     left: 0;
+                     width: 100%;
+                     height: 100%;
+                     background: rgba(0,0,0,0.8);
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     z-index: 9999;
+                     animation: fadeIn 0.3s ease;
+                 ">
+                    <div class="donation-form" style="
+                        background: white;
+                        padding: 2.5rem;
+                        border-radius: 20px;
+                        max-width: 450px;
+                        width: 90%;
+                        position: relative;
+                        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                        animation: slideIn 0.3s ease;
+                    ">
+                        <button onclick="closeDonationForm()" style="
+                            position: absolute;
+                            top: 15px;
+                            right: 20px;
+                            background: rgba(0,0,0,0.1);
+                            border: none;
+                            font-size: 1.5rem;
+                            cursor: pointer;
+                            color: #666;
+                            width: 35px;
+                            height: 35px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(0,0,0,0.2)'; this.style.color='#333';" onmouseout="this.style.background='rgba(0,0,0,0.1)'; this.style.color='#666';">&times;</button>
+                        
+                        <h3 style="margin-bottom: 1.5rem; color: #333;">Support Our Mission</h3>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.75rem; color: #333; font-weight: 600; font-size: 1rem;">Email Address</label>
+                            <input type="email" id="donorEmail" placeholder="your@email.com" style="
+                                width: 100%;
+                                padding: 1rem;
+                                border: 2px solid #e9ecef;
+                                border-radius: 12px;
+                                font-size: 1rem;
+                                transition: all 0.3s ease;
+                                box-sizing: border-box;
+                            " onfocus="this.style.borderColor='#ff6b35'; this.style.boxShadow='0 0 0 3px rgba(255, 107, 53, 0.1)'" onblur="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
+                        </div>
+                        
+                                                 <div style="margin-bottom: 1.5rem;">
+                             <label style="display: block; margin-bottom: 0.75rem; color: #333; font-weight: 600; font-size: 1rem;">Donation Amount (KES)</label>
+                             <select id="donationAmount" style="
+                                 width: 100%;
+                                 padding: 1rem;
+                                 border: 2px solid #e9ecef;
+                                 border-radius: 12px;
+                                 font-size: 1rem;
+                                 transition: all 0.3s ease;
+                                 box-sizing: border-box;
+                                 background: white;
+                             " onfocus="this.style.borderColor='#ff6b35'; this.style.boxShadow='0 0 0 3px rgba(255, 107, 53, 0.1)'" onblur="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
+                                 <option value="500">KES 500</option>
+                                 <option value="1000">KES 1,000</option>
+                                 <option value="2500">KES 2,500</option>
+                                 <option value="5000">KES 5,000</option>
+                                 <option value="custom">Custom Amount</option>
+                             </select>
+                         </div>
+                        
+                                                 <div id="customAmountDiv" style="display: none; margin-bottom: 1.5rem;">
+                             <label style="display: block; margin-bottom: 0.75rem; color: #333; font-weight: 600; font-size: 1rem;">Custom Amount (KES)</label>
+                             <input type="number" id="customAmount" placeholder="Enter amount" style="
+                                 width: 100%;
+                                 padding: 1rem;
+                                 border: 2px solid #e9ecef;
+                                 border-radius: 12px;
+                                 font-size: 1rem;
+                                 transition: all 0.3s ease;
+                                 box-sizing: border-box;
+                             " onfocus="this.style.borderColor='#ff6b35'; this.style.boxShadow='0 0 0 3px rgba(255, 107, 53, 0.1)'" onblur="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
+                         </div>
+                        
+                        <button onclick="processDonation()" style="
+                            width: 100%;
+                            padding: 1.2rem;
+                            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            font-size: 1.1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(255, 107, 53, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(255, 107, 53, 0.3)'">Donate Now</button>
+                        
+                        <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; text-align: center;">
+                            Secure payment powered by Paystack
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', formHTML);
+            
+            // Handle custom amount selection
+            document.getElementById('donationAmount').addEventListener('change', function() {
+                const customDiv = document.getElementById('customAmountDiv');
+                if (this.value === 'custom') {
+                    customDiv.style.display = 'block';
+                } else {
+                    customDiv.style.display = 'none';
+                }
+            });
+        }
+
+        function closeDonationForm() {
+            const modal = document.querySelector('.donation-modal');
+            const form = document.querySelector('.donation-form');
+            if (modal && form) {
+                form.style.animation = 'slideOut 0.3s ease forwards';
+                modal.style.animation = 'fadeIn 0.3s ease reverse forwards';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        function processDonation() {
+            const email = document.getElementById('donorEmail').value;
+            const amountSelect = document.getElementById('donationAmount');
+            const customAmount = document.getElementById('customAmount').value;
+            
+            if (!email) {
+                showErrorMessage('Please enter your email address');
+                return;
+            }
+            
+            let amount = amountSelect.value;
+                         if (amount === 'custom') {
+                 if (!customAmount || customAmount < 100) {
+                     showErrorMessage('Please enter a valid amount (minimum KES 100)');
+                     return;
+                 }
+                 amount = customAmount * 100; // Convert to cents
+             } else {
+                 amount = parseInt(amount) * 100; // Convert to cents
+             }
+            
+            // Try Paystack again with the form data
+            if (typeof PaystackPop !== 'undefined') {
+                                 const handler = PaystackPop.setup({
+                     key: 'pk_live_213ea28caffedd5ca6ef1a36b235d421a1ae3ea0',
+                     email: email,
+                     amount: amount,
+                     currency: 'KES',
+                     ref: 'KIKUYU_' + Date.now(),
+                    callback: function(response) {
+                        console.log('Payment successful:', response);
+                        showSuccessMessage('Thank you for your donation! Your support helps preserve Kenyan cultural heritage.');
+                        closeDonationForm();
+                        
+                        // Redirect to success page
+                        const successUrl = window.location.origin + '/payment-success.html' + 
+                            '?transaction_id=' + response.reference +
+                            '&amount=' + (response.amount / 100) +
+                            '&status=success';
+                        window.location.href = successUrl;
+                    },
+                    onClose: function() {
+                        console.log('Payment modal closed');
+                        showErrorMessage('Payment was cancelled. Please try again when you\'re ready.');
+                    }
+                });
+                
+                try {
+                    handler.openIframe();
+                } catch (error) {
+                    console.error('Paystack error:', error);
+                    showErrorMessage('Payment initialization failed. Please try again.');
+                }
+            } else {
+                showErrorMessage('Payment system is not available. Please try again later.');
+            }
+                 }
+         
+         // Mobile menu functionality
+         function toggleMenu() {
+             const navMenu = document.getElementById('navMenu');
+             const navButtons = document.getElementById('navButtons');
+             const hamburger = document.querySelector('.hamburger');
+             
+             navMenu.classList.toggle('active');
+             navButtons.classList.toggle('active');
+             hamburger.classList.toggle('active');
+         }
+         
+         function closeMenu() {
+             const navMenu = document.getElementById('navMenu');
+             const navButtons = document.getElementById('navButtons');
+             const hamburger = document.querySelector('.hamburger');
+             
+             navMenu.classList.remove('active');
+             navButtons.classList.remove('active');
+             hamburger.classList.remove('active');
+         }
+         
+         // Close menu when clicking outside
+         document.addEventListener('click', function(event) {
+             const navbar = document.querySelector('.navbar');
+             const hamburger = document.querySelector('.hamburger');
+             
+             if (!navbar.contains(event.target) && !hamburger.contains(event.target)) {
+                 closeMenu();
+             }
+         });
+     </script>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Welcome Back</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+            <p class="auth-footer">
+                Don't have an account? <a href="#" onclick="switchModal('loginModal', 'signupModal')">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            <h2>Join Kikuyulearn</h2>
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="#" onclick="switchModal('signupModal', 'loginModal')">Login</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

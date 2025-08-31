@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lessons - Kikuyulearn</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .lessons-container {
+            padding-top: 100px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--light-gray) 0%, #e9ecef 100%);
+        }
+        
+        .lesson-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .category-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .category-icon i {
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+        
+        .category-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--secondary-black);
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-card p {
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+        
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .lesson-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .lesson-number {
+            background: var(--primary-orange);
+            color: var(--white);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .lesson-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-locked {
+            background: #f8f9fa;
+            color: var(--medium-gray);
+        }
+        
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .lesson-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-black);
+            margin-bottom: 0.5rem;
+        }
+        
+        .lesson-description {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .lesson-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+        }
+        
+        .lesson-meta i {
+            margin-right: 0.25rem;
+        }
+        
+        .user-progress {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+        
+        .streak-counter {
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+            color: var(--white);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .streak-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .streak-text {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Kikuyulearn</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="Lessons.html" class="nav-link">Lessons</a>
+                <a href="leaderboard.html" class="nav-link">Leaderboard</a>
+                <a href="Profile.html" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-buttons">
+                <span class="user-welcome">Welcome, Learner!</span>
+                <button class="btn btn-outline" onclick="signOut()">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="lessons-container">
+        <div class="container">
+            <!-- User Progress Section -->
+            <div class="user-progress">
+                <h2 style="margin-bottom: 1rem; color: var(--secondary-black);">Your Learning Progress</h2>
+                <div class="progress-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">0</span>
+                        <span class="stat-label">Lessons Completed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">0%</span>
+                        <span class="stat-label">Overall Progress</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">0</span>
+                        <span class="stat-label">Points Earned</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">0</span>
+                        <span class="stat-label">Day Streak</span>
+                    </div>
+                </div>
+                <div class="streak-counter">
+                    <span class="streak-number">0</span>
+                    <span class="streak-text">Day Learning Streak! 🔥</span>
+                </div>
+                
+                <!-- Auto-sync status -->
+                <div style="text-align: center; margin-top: 1rem;">
+                    <div>
+                        <small style="color: var(--text-muted);">
+                            <i class="fas fa-sync-alt"></i> Progress automatically synced every 30 seconds
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lesson Categories -->
+            <h2 style="margin-bottom: 2rem; color: var(--secondary-black);">Choose Your Learning Path</h2>
+            <div class="lesson-categories">
+                <div class="category-card" data-category="vocabulary" onclick="showCategoryLessons('vocabulary')">
+                    <div class="category-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Vocabulary</h3>
+                    <p>Learn essential Kikuyu words and phrases for everyday communication.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="category-progress">0/4 lessons completed</div>
+                </div>
+
+                <div class="category-card" data-category="grammar" onclick="showCategoryLessons('grammar')">
+                    <div class="category-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3>Grammar</h3>
+                    <p>Master Kikuyu grammar rules and sentence structure.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="category-progress">0/2 lessons completed</div>
+                </div>
+
+                <div class="category-card" data-category="culture" onclick="showCategoryLessons('culture')">
+                    <div class="category-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Culture & Traditions</h3>
+                    <p>Discover Kikuyu customs, traditions, and cultural significance.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="category-progress">0/2 lessons completed</div>
+                </div>
+
+                <div class="category-card" data-category="conversation" onclick="showCategoryLessons('conversation')">
+                    <div class="category-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Conversation</h3>
+                    <p>Practice real-world conversations and dialogue scenarios.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="category-progress">0/2 lessons completed</div>
+                </div>
+            </div>
+
+            <!-- Lesson Categories -->
+            <div class="category-filters">
+                <button class="category-btn active" onclick="showCategoryLessons('all')">All Lessons</button>
+                <button class="category-btn" onclick="showCategoryLessons('vocabulary')">Vocabulary</button>
+                <button class="category-btn" onclick="showCategoryLessons('grammar')">Grammar</button>
+                <button class="category-btn" onclick="showCategoryLessons('culture')">Culture & Traditions</button>
+                <button class="category-btn" onclick="showCategoryLessons('conversation')">Conversation</button>
+            </div>
+
+            <!-- All Lessons -->
+            <div id="all-lessons" class="lessons-section">
+                <h3 class="category-title" style="margin-bottom: 1.5rem; color: var(--secondary-black);">All Lessons</h3>
+                <div class="lessons-grid">
+                    <!-- Vocabulary Lessons -->
+                    <div class="lesson-card" data-category="vocabulary" data-lesson-id="vocab-1">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Basic Greetings</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Learn essential Kikuyu greetings and how to say hello.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 5 min</span>
+                            <span><i class="fas fa-star"></i> Beginner</span>
+                            <span><i class="fas fa-trophy"></i> 10 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('vocab-1')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="vocabulary" data-lesson-id="vocab-2">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Family Members</h4>
+                           
+                        </div>
+                        <p class="lesson-description">Master the names of family members and relationships in Kikuyu.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 8 min</span>
+                            <span><i class="fas fa-star"></i> Beginner</span>
+                            <span><i class="fas fa-trophy"></i> 15 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('vocab-2')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="vocabulary" data-lesson-id="vocab-3">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Numbers & Counting</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Learn to count from 1 to 100 and understand number patterns.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Beginner</span>
+                            <span><i class="fas fa-trophy"></i> 12 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('vocab-3')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="vocabulary" data-lesson-id="vocab-4">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Colors & Descriptions</h4>
+                           
+                        </div>
+                        <p class="lesson-description">Learn colors and descriptive words to express yourself better.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 7 min</span>
+                            <span><i class="fas fa-star"></i> Beginner</span>
+                            <span><i class="fas fa-trophy"></i> 15 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('vocab-4')">Start Lesson</button>
+                    </div>
+
+                    <!-- Grammar Lessons -->
+                    <div class="lesson-card" data-category="grammar" data-lesson-id="grammar-1">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Basic Sentence Structure</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Learn the fundamental structure of Kikuyu sentences.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 12 min</span>
+                            <span><i class="fas fa-star"></i> Intermediate</span>
+                            <span><i class="fas fa-trophy"></i> 20 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('grammar-1')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="grammar" data-lesson-id="grammar-2">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Verb Conjugation</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Master verb forms and conjugation patterns in Kikuyu.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 15 min</span>
+                            <span><i class="fas fa-star"></i> Advanced</span>
+                            <span><i class="fas fa-trophy"></i> 25 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('grammar-2')">Start Lesson</button>
+                    </div>
+
+                    <!-- Culture & Traditions -->
+                    <div class="lesson-card" data-category="culture" data-lesson-id="culture-1">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Traditional Ceremonies</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Discover Kikuyu customs, traditions, and cultural significance.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 12 min</span>
+                            <span><i class="fas fa-star"></i> Advanced</span>
+                            <span><i class="fas fa-trophy"></i> 25 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('culture-1')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="culture" data-lesson-id="culture-2">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Elders & Respect</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Learn about the importance of elders and respect in Kikuyu culture.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-star"></i> Intermediate</span>
+                            <span><i class="fas fa-trophy"></i> 18 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('culture-2')">Start Lesson</button>
+                    </div>
+
+                    <!-- Conversation -->
+                    <div class="lesson-card" data-category="conversation" data-lesson-id="conv-1">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Daily Conversations</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Practice real-world conversations and dialogue scenarios.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 15 min</span>
+                            <span><i class="fas fa-star"></i> Intermediate</span>
+                            <span><i class="fas fa-trophy"></i> 22 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('conv-1')">Start Lesson</button>
+                    </div>
+
+                    <div class="lesson-card" data-category="conversation" data-lesson-id="conv-2">
+                        <div class="lesson-header">
+                            <h4 class="lesson-title">Market Conversations</h4>
+                            
+                        </div>
+                        <p class="lesson-description">Learn to negotiate and communicate in market settings.</p>
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-clock"></i> 18 min</span>
+                            <span><i class="fas fa-star"></i> Advanced</span>
+                            <span><i class="fas fa-trophy"></i> 28 pts</span>
+                        </div>
+                        <div class="lesson-status available">Available</div>
+                        <button class="btn btn-primary" onclick="startLesson('conv-2')">Start Lesson</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/script-simple.js"></script>
+    <script src="../js/lesson.js"></script>
+
+</body>
+</html>
