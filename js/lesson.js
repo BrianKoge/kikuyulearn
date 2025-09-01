@@ -541,6 +541,11 @@ async function completeLesson(lessonId) {
         // Recalculate points to ensure accuracy after lesson completion
         recalculateUserPoints();
         
+        // Auto-refresh progress immediately after lesson completion
+        setTimeout(() => {
+            autoRefreshProgress();
+        }, 1000); // Wait 1 second after lesson completion
+        
         // Auto-sync immediately after lesson completion
         if (window.currentUser && window.currentUser.id && !window.currentUser.id.startsWith('demo_user_')) {
             setTimeout(async () => {
@@ -701,6 +706,9 @@ async function initializeLessonsPage() {
         
         // Set up automatic syncing every 30 seconds
         setupAutoSync();
+        
+        // Set up page visibility listener for auto-refresh
+        setupPageVisibilityListener();
         
         console.log('Lessons page initialized successfully');
     }
@@ -1107,6 +1115,77 @@ function stopAutoSync() {
     }
 }
 
+// Handle page visibility changes to auto-refresh when user returns
+function setupPageVisibilityListener() {
+    let hidden = false;
+    let visibilityChange = false;
+    
+    if (typeof document.hidden !== "undefined") {
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
+    
+    if (typeof document.addEventListener !== "undefined" && typeof hidden !== false) {
+        document.addEventListener(visibilityChange, function() {
+            if (!document[hidden]) {
+                // Page became visible - user returned to the page
+                console.log('Page became visible - auto-refreshing progress...');
+                setTimeout(() => {
+                    autoRefreshProgress();
+                }, 1000); // Wait 1 second after page becomes visible
+            }
+        }, false);
+    }
+    
+    // Also listen for window focus events (when user returns to browser tab)
+    window.addEventListener('focus', function() {
+        console.log('Window focused - auto-refreshing progress...');
+        setTimeout(() => {
+            autoRefreshProgress();
+        }, 500); // Wait 0.5 seconds after window focus
+    });
+    
+    // Listen for navigation events (when user navigates back to lessons page)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            // Page was loaded from back-forward cache
+            console.log('Page shown from cache - auto-refreshing progress...');
+            setTimeout(() => {
+                autoRefreshProgress();
+            }, 1000);
+        }
+    });
+}
+
+// Automatic progress refresh function
+async function autoRefreshProgress() {
+    console.log('Auto-refreshing progress...');
+    try {
+        // Reload user progress from Supabase
+        await loadUserProgress();
+        
+        // Force sync with Supabase
+        await syncWithSupabase();
+        
+        // Recalculate points to ensure accuracy
+        recalculateUserPoints();
+        
+        // Update displays
+        updateLessonCards();
+        updateUserProgressStats();
+        
+        console.log('Auto-refresh completed successfully');
+    } catch (error) {
+        console.error('Auto-refresh failed:', error);
+    }
+}
+
 // Recalculate points from completed lessons to ensure accuracy
 function recalculateUserPoints() {
     const lessonData = {
@@ -1193,11 +1272,20 @@ window.syncWithSupabase = syncWithSupabase;
 window.debugProgress = debugProgress;
 window.refreshProgressFromSupabase = refreshProgressFromSupabase;
 window.recalculateUserPoints = recalculateUserPoints;
+window.autoRefreshProgress = autoRefreshProgress;
 
 // Initialize lessons page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Lesson.js: DOM Content Loaded');
     initializeLessonsPage();
+    
+    // Also listen for page load events (when page is refreshed)
+    window.addEventListener('load', function() {
+        console.log('Page loaded - auto-refreshing progress...');
+        setTimeout(() => {
+            autoRefreshProgress();
+        }, 2000); // Wait 2 seconds after page load
+    });
 });
 
 // Auto-sync when user leaves the page
