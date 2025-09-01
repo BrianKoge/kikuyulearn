@@ -152,7 +152,6 @@ function updateUIForAuthState(user) {
         // User is logged in
         if (navButtons) {
             navButtons.innerHTML = `
-                <span class="user-welcome">Welcome, ${user.user_metadata?.full_name || user.email}</span>
                 <button class="btn btn-outline" onclick="signOut()">Sign Out</button>
             `;
         }

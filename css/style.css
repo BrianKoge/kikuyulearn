@@ -76,6 +76,31 @@ body {
     align-items: center;
 }
 
+/* Desktop navigation styling */
+@media (min-width: 769px) {
+    .nav-menu {
+        display: flex !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        gap: 2rem !important;
+    }
+    
+    .nav-menu .nav-link {
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 5px !important;
+        width: auto !important;
+        max-width: none !important;
+        text-align: left !important;
+    }
+}
+
 .nav-link {
     text-decoration: none;
     color: var(--secondary-black);
@@ -254,10 +279,29 @@ body {
 }
 
 
-/* Hide sign out button in hamburger menu on desktop only */
+/* Show sign out button on desktop */
 @media (min-width: 769px) {
     .nav-menu .sign-out-btn {
-        display: none !important;
+        display: block !important;
+        background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+        color: white !important;
+        border-radius: 25px !important;
+        padding: 12px 24px !important;
+        margin-top: 15px !important;
+        border: none !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3) !important;
+        text-decoration: none !important;
+        width: 80% !important;
+        max-width: 250px !important;
+    }
+    
+    .nav-menu .sign-out-btn:hover {
+        background: linear-gradient(135deg, #c0392b, #a93226) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
     }
 }
 

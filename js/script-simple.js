@@ -350,12 +350,6 @@ async function handleProfileUpdate(e) {
 
 // Update profile display on the page
 function updateProfileDisplay(profileData) {
-    // Update profile name
-    const profileName = document.querySelector('.profile-name');
-    if (profileName) {
-        profileName.textContent = profileData.full_name;
-    }
-    
     // Update profile email
     const profileEmail = document.querySelector('.profile-email');
     if (profileEmail) {
@@ -518,7 +512,6 @@ function updateUIForAuthState(user) {
         // Update navigation buttons
         if (navButtons) {
             navButtons.innerHTML = `
-                <span class="user-welcome">Welcome, ${displayName}!</span>
                 <button class="btn btn-outline" onclick="signOut()">Sign Out</button>
             `;
         }
@@ -526,9 +519,10 @@ function updateUIForAuthState(user) {
         // Update navigation menu for authenticated users
         if (navMenu) {
             navMenu.innerHTML = `
-                        <a href="../Html/Lessons.html" class="nav-link">Lessons</a>
-        <a href="../Html/leaderboard.html" class="nav-link">Leaderboard</a>
-        <a href="../Html/Profile.html" class="nav-link">Profile</a>
+                <a href="../Html/Lessons.html" class="nav-link">Lessons</a>
+                <a href="../Html/leaderboard.html" class="nav-link">Leaderboard</a>
+                <a href="../Html/Profile.html" class="nav-link">Profile</a>
+                <a href="#" class="nav-link sign-out-btn" onclick="signOut(); closeMenu();">Sign Out</a>
             `;
         }
     } else {
@@ -855,7 +849,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Redirect to lessons page after successful signup
                 setTimeout(() => {
-                    window.location.href = '../Html/Profile.html';
+                    window.location.href = '../Html/Lessons.html';
                 }, 1500);
                 
             } catch (error) {
