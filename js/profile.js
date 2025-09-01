@@ -609,32 +609,63 @@ function updateProfileDisplay() {
 // Load user statistics
 async function loadUserStatistics() {
     try {
+        console.log('Loading user statistics...');
         let completedLessons = 0;
         let totalPoints = 0;
         let currentStreak = 0;
         
         if (currentUserProfile && !currentUserProfile.id.startsWith('demo_user_')) {
+            console.log('Loading statistics from Supabase for user:', currentUserProfile.id);
             // Get real data from Supabase
             try {
-                const progressData = await UserProgressManager.getUserProgress(currentUserProfile.id);
-                completedLessons = progressData.filter(p => p.progress_percentage >= 100).length;
-                totalPoints = currentUserProfile.points || 0;
-                currentStreak = getCurrentStreak();
+                // Check if UserProgressManager is available
+                if (typeof UserProgressManager !== 'undefined') {
+                    const progressData = await UserProgressManager.getUserProfile(currentUserProfile.id);
+                    console.log('Profile data from Supabase:', progressData);
+                    
+                    // Get total points from profile
+                    totalPoints = progressData?.total_score || currentUserProfile.points || 0;
+                    console.log('Total points from profile:', totalPoints);
+                    
+                    // Get progress data for completed lessons
+                    const userProgress = await UserProgressManager.getUserProgress(currentUserProfile.id);
+                    console.log('Progress data from Supabase:', userProgress);
+                    
+                    // Count completed lessons (progress >= 100%)
+                    completedLessons = userProgress.filter(p => p.progress_percentage >= 100).length;
+                    console.log('Completed lessons count:', completedLessons);
+                    
+                    // Get current streak
+                    currentStreak = getCurrentStreak();
+                    console.log('Current streak:', currentStreak);
+                } else {
+                    console.log('UserProgressManager not available, using fallback data');
+                    // Use fallback data
+                    completedLessons = 0;
+                    totalPoints = currentUserProfile.points || 0;
+                    currentStreak = getCurrentStreak();
+                }
             } catch (error) {
                 console.error('Failed to load statistics from Supabase:', error);
-                // Use localStorage data
-                loadStatisticsFromLocalStorage();
+                // Use fallback data
+                completedLessons = 0;
+                totalPoints = currentUserProfile.points || 0;
+                currentStreak = getCurrentStreak();
             }
         } else {
+            console.log('Using localStorage data for statistics');
             // Use localStorage data
             loadStatisticsFromLocalStorage();
+            return; // This function will call updateStatisticsDisplay
         }
         
+        console.log('Final statistics:', { completedLessons, totalPoints, currentStreak });
         // Update statistics display
         updateStatisticsDisplay(completedLessons, totalPoints, currentStreak);
         
     } catch (error) {
         console.error('Error loading user statistics:', error);
+        // Use localStorage data as final fallback
         loadStatisticsFromLocalStorage();
     }
 }
@@ -661,12 +692,27 @@ function loadStatisticsFromLocalStorage() {
 
 // Update statistics display
 function updateStatisticsDisplay(completedLessons, totalPoints, currentStreak) {
-    const statNumbers = document.querySelectorAll('.stat-number');
-    if (statNumbers.length >= 3) {
-        statNumbers[0].textContent = completedLessons;
-        statNumbers[1].textContent = totalPoints.toLocaleString();
-        statNumbers[2].textContent = currentStreak;
+    // Update using specific IDs for better reliability
+    const lessonsCompletedElement = document.getElementById('lessonsCompleted');
+    const totalPointsElement = document.getElementById('totalPoints');
+    const dayStreakElement = document.getElementById('dayStreak');
+    
+    if (lessonsCompletedElement) {
+        lessonsCompletedElement.textContent = completedLessons;
+        console.log('Updated lessons completed:', completedLessons);
     }
+    
+    if (totalPointsElement) {
+        totalPointsElement.textContent = totalPoints.toLocaleString();
+        console.log('Updated total points:', totalPoints);
+    }
+    
+    if (dayStreakElement) {
+        dayStreakElement.textContent = currentStreak;
+        console.log('Updated day streak:', currentStreak);
+    }
+    
+    console.log('Statistics display updated:', { completedLessons, totalPoints, currentStreak });
 }
 
 // Get current learning streak
@@ -826,6 +872,17 @@ async function forceRefreshUserData() {
     }
 }
 
+// Manually refresh statistics from Supabase
+async function refreshStatistics() {
+    console.log('Manually refreshing statistics...');
+    try {
+        await loadUserStatistics();
+        console.log('Statistics refreshed successfully');
+    } catch (error) {
+        console.error('Error refreshing statistics:', error);
+    }
+}
+
 // Force create profile from current user data (for debugging)
 function forceCreateProfile() {
     console.log('Force creating profile...');
@@ -866,6 +923,9 @@ function forceCreateProfile() {
         
         // Update display
         updateProfileDisplay();
+        
+        // Load statistics after profile creation
+        loadUserStatistics();
         
         return currentUserProfile;
     } else {
@@ -914,6 +974,7 @@ window.saveProfileChanges = saveProfileChanges;
 window.forceRefreshUserData = forceRefreshUserData;
 window.debugUserData = debugUserData;
 window.forceCreateProfile = forceCreateProfile;
+window.refreshStatistics = refreshStatistics;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
