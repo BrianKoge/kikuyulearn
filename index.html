@@ -32,10 +32,7 @@
                 <button class="btn btn-outline mobile-btn" onclick="showLoginModal()">Login</button>
                 <button class="btn btn-primary mobile-btn" onclick="showSignupModal()">Sign Up</button>
             </div>
-            <div class="nav-buttons" id="navButtons">
-                <button class="btn btn-outline" onclick="showLoginModal()">Login</button>
-                <button class="btn btn-primary" onclick="showSignupModal()">Sign Up</button>
-            </div>
+
         </div>
     </nav>
 
@@ -247,21 +244,17 @@
         // Mobile menu functionality
         function toggleMenu() {
             const navMenu = document.getElementById('navMenu');
-            const navButtons = document.getElementById('navButtons');
             const hamburger = document.querySelector('.hamburger');
             
             navMenu.classList.toggle('active');
-            navButtons.classList.toggle('active');
             hamburger.classList.toggle('active');
         }
         
         function closeMenu() {
             const navMenu = document.getElementById('navMenu');
-            const navButtons = document.getElementById('navButtons');
             const hamburger = document.querySelector('.hamburger');
             
             navMenu.classList.remove('active');
-            navButtons.classList.remove('active');
             hamburger.classList.remove('active');
         }
         
