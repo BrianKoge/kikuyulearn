@@ -184,8 +184,7 @@ body {
     }
     
     /* Mobile button styling */
-    .nav-menu.active .mobile-btn,
-    .nav-menu.active .sign-out-btn {
+    .nav-menu.active .mobile-btn {
         width: 200px !important;
         padding: 1rem 2rem !important;
         font-size: 1.1rem !important;
@@ -202,18 +201,7 @@ body {
         margin: 5px 0 !important;
     }
     
-    /* Sign out button specific styling in mobile menu */
-    .nav-menu.active .sign-out-btn {
-        background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
-        color: white !important;
-        margin-top: 10px !important;
-    }
-    
-    .nav-menu.active .sign-out-btn:hover {
-        background: linear-gradient(135deg, #c0392b, #a93226) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
-    }
+
     
     .nav-menu.active .mobile-btn:hover {
         transform: translateY(-3px) !important;
@@ -234,12 +222,7 @@ body {
 
 }
 
-/* Hide sign out button in hamburger menu on desktop only */
-@media (min-width: 769px) {
-    .nav-menu .sign-out-btn {
-        display: none !important;
-    }
-}
+
 
 /* Buttons */
 .btn {
