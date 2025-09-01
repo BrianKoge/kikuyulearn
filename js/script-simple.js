@@ -526,9 +526,9 @@ function updateUIForAuthState(user) {
         // Update navigation menu for authenticated users
         if (navMenu) {
             navMenu.innerHTML = `
-                        <a href="Html/Lessons.html" class="nav-link">Lessons</a>
-        <a href="Html/leaderboard.html" class="nav-link">Leaderboard</a>
-        <a href="Html/Profile.html" class="nav-link">Profile</a>
+                        <a href="./Lessons.html" class="nav-link">Lessons</a>
+        <a href="./leaderboard.html" class="nav-link">Leaderboard</a>
+        <a href="./Profile.html" class="nav-link">Profile</a>
             `;
         }
     } else {
@@ -746,7 +746,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Redirect to lessons page after successful login
                 setTimeout(() => {
-                    window.location.href = 'Html/Lessons.html';
+                    window.location.href = './Lessons.html';
                 }, 1500);
                 
             } catch (error) {
@@ -855,7 +855,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Redirect to lessons page after successful signup
                 setTimeout(() => {
-                    window.location.href = 'Html/Lessons.html';
+                    window.location.href = './Lessons.html';
                 }, 1500);
                 
             } catch (error) {
