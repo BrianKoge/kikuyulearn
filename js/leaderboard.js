@@ -399,6 +399,7 @@ async function checkAndAwardAchievements() {
         // Try to get data from Supabase
         if (typeof UserProgressManager !== 'undefined') {
             try {
+                console.log('=== ACHIEVEMENT CHECK: Getting real lesson data ===');
                 userProfile = await UserProgressManager.getUserProfile(window.currentUser.id);
                 userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
                 
@@ -409,8 +410,16 @@ async function checkAndAwardAchievements() {
                 
                 if (userProgress && Array.isArray(userProgress)) {
                     completedLessons = userProgress.filter(p => p.progress_percentage >= 100).length;
-                    console.log('Completed lessons from progress data:', completedLessons);
-                    console.log('Raw progress data:', userProgress);
+                    console.log('Completed lessons from real lesson data:', completedLessons);
+                    console.log('Raw lesson progress data:', userProgress);
+                    
+                    // Log each completed lesson for verification
+                    const completedLessonsList = userProgress.filter(p => p.progress_percentage >= 100);
+                    console.log('Completed lessons list:', completedLessonsList.map(p => ({
+                        lesson_id: p.lesson_id,
+                        progress: p.progress_percentage,
+                        completed_at: p.updated_at
+                    })));
                 } else {
                     console.log('No progress data from Supabase, using localStorage fallback');
                 }
@@ -554,7 +563,7 @@ async function checkAndAwardAchievements() {
         }
         
         // Check category completion achievements
-        const categoryProgress = getCategoryProgress();
+        const categoryProgress = await getCategoryProgress();
         
         if (categoryProgress.vocabulary >= 4 && !hasAchievement('vocab_master')) {
             achievements.push({
@@ -564,6 +573,7 @@ async function checkAndAwardAchievements() {
                 description: 'Complete all vocabulary lessons',
                 earned_at: new Date().toISOString()
             });
+            console.log('Vocabulary Master achievement unlocked!');
         }
         
         if (categoryProgress.grammar >= 2 && !hasAchievement('grammar_master')) {
@@ -574,6 +584,7 @@ async function checkAndAwardAchievements() {
                 description: 'Complete all grammar lessons',
                 earned_at: new Date().toISOString()
             });
+            console.log('Grammar Master achievement unlocked!');
         }
         
         if (categoryProgress.culture >= 2 && !hasAchievement('culture_master')) {
@@ -584,6 +595,7 @@ async function checkAndAwardAchievements() {
                 description: 'Complete all culture lessons',
                 earned_at: new Date().toISOString()
             });
+            console.log('Culture Master achievement unlocked!');
         }
         
         if (categoryProgress.conversation >= 2 && !hasAchievement('conversation_master')) {
@@ -594,6 +606,7 @@ async function checkAndAwardAchievements() {
                 description: 'Complete all conversation lessons',
                 earned_at: new Date().toISOString()
             });
+            console.log('Conversation Master achievement unlocked!');
         }
         
         // Check streak achievements
@@ -700,32 +713,129 @@ function getCurrentStreak() {
     }
 }
 
-// Get category progress from localStorage or Supabase
-function getCategoryProgress() {
-    const categories = {
-        'vocabulary': ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4'],
-        'grammar': ['grammar-1', 'grammar-2'],
-        'culture': ['culture-1', 'culture-2'],
-        'conversation': ['conv-1', 'conv-2']
-    };
-    
-    const progress = {};
-    
-    Object.keys(categories).forEach(category => {
-        const lessonIds = categories[category];
-        let completedInCategory = 0;
+// Get category progress from real lesson data in database
+async function getCategoryProgress() {
+    if (!window.currentUser || typeof UserProgressManager === 'undefined') {
+        // Fallback to localStorage if no user or UserProgressManager
+        const categories = {
+            'vocabulary': ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4'],
+            'grammar': ['grammar-1', 'grammar-2'],
+            'culture': ['culture-1', 'culture-2'],
+            'conversation': ['conv-1', 'conv-2']
+        };
         
-        lessonIds.forEach(lessonId => {
-            const lessonProgress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
-            if (parseInt(lessonProgress) >= 100) {
-                completedInCategory++;
-            }
+        const progress = {};
+        
+        Object.keys(categories).forEach(category => {
+            const lessonIds = categories[category];
+            let completedInCategory = 0;
+            
+            lessonIds.forEach(lessonId => {
+                const lessonProgress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
+                if (parseInt(lessonProgress) >= 100) {
+                    completedInCategory++;
+                }
+            });
+            
+            progress[category] = completedInCategory;
         });
         
-        progress[category] = completedInCategory;
-    });
+        return progress;
+    }
     
-    return progress;
+    try {
+        console.log('Getting category progress from real lesson data...');
+        
+        // Get real lesson progress from database
+        const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+        
+        if (userProgress && Array.isArray(userProgress)) {
+            const categories = {
+                'vocabulary': ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4'],
+                'grammar': ['grammar-1', 'grammar-2'],
+                'culture': ['culture-1', 'culture-2'],
+                'conversation': ['conv-1', 'conv-2']
+            };
+            
+            const progress = {};
+            
+            Object.keys(categories).forEach(category => {
+                const lessonIds = categories[category];
+                let completedInCategory = 0;
+                
+                lessonIds.forEach(lessonId => {
+                    const lessonProgress = userProgress.find(p => p.lesson_id === lessonId);
+                    if (lessonProgress && lessonProgress.progress_percentage >= 100) {
+                        completedInCategory++;
+                        console.log(`Category ${category}: Lesson ${lessonId} completed`);
+                    }
+                });
+                
+                progress[category] = completedInCategory;
+                console.log(`Category ${category}: ${completedInCategory}/${lessonIds.length} lessons completed`);
+            });
+            
+            console.log('Real category progress:', progress);
+            return progress;
+        }
+        
+        console.log('No user progress data found, using localStorage fallback');
+        
+        // Fallback to localStorage if no database data
+        const categories = {
+            'vocabulary': ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4'],
+            'grammar': ['grammar-1', 'grammar-2'],
+            'culture': ['culture-1', 'culture-2'],
+            'conversation': ['conv-1', 'conv-2']
+        };
+        
+        const progress = {};
+        
+        Object.keys(categories).forEach(category => {
+            const lessonIds = categories[category];
+            let completedInCategory = 0;
+            
+            lessonIds.forEach(lessonId => {
+                const lessonProgress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
+                if (parseInt(lessonProgress) >= 100) {
+                    completedInCategory++;
+                }
+            });
+            
+            progress[category] = completedInCategory;
+        });
+        
+        return progress;
+        
+    } catch (error) {
+        console.error('Error getting category progress from database:', error);
+        
+        // Fallback to localStorage on error
+        const categories = {
+            'vocabulary': ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4'],
+            'grammar': ['grammar-1', 'grammar-2'],
+            'culture': ['culture-1', 'culture-2'],
+            'conversation': ['conv-1', 'conv-2']
+        };
+        
+        const progress = {};
+        
+        Object.keys(categories).forEach(category => {
+            const lessonIds = categories[category];
+            let completedInCategory = 0;
+            
+            lessonIds.forEach(lessonId => {
+                const lessonProgress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
+                if (parseInt(lessonProgress) >= 100) {
+                    completedInCategory++;
+                }
+            });
+            
+            progress[category] = completedInCategory;
+        });
+        
+        return progress;
+    }
 }
 
 // Display leaderboard
@@ -1441,6 +1551,135 @@ window.forceRefreshFromLessons = async function() {
     } catch (error) {
         console.error('Error in force refresh:', error);
         showErrorMessage('Failed to refresh from lesson data');
+    }
+};
+
+// Test achievement unlocking with real lesson data
+window.testAchievementUnlock = async function() {
+    console.log('=== TESTING ACHIEVEMENT UNLOCK WITH REAL LESSON DATA ===');
+    
+    if (!window.currentUser) {
+        console.log('No authenticated user found');
+        return;
+    }
+    
+    try {
+        // Get real lesson progress
+        if (typeof UserProgressManager !== 'undefined') {
+            const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+            console.log('Current lesson progress:', userProgress);
+            
+            if (userProgress && Array.isArray(userProgress)) {
+                // Count completed lessons
+                const completedLessons = userProgress.filter(p => p.progress_percentage >= 100).length;
+                console.log('Completed lessons:', completedLessons);
+                
+                // Calculate total points
+                const lessonData = {
+                    'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                    'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                    'conv-1': 22, 'conv-2': 28
+                };
+                
+                let totalPoints = 0;
+                userProgress.forEach(progress => {
+                    if (progress.progress_percentage >= 100) {
+                        totalPoints += lessonData[progress.lesson_id] || 0;
+                        console.log(`Lesson ${progress.lesson_id} completed: +${lessonData[progress.lesson_id]} points`);
+                    }
+                });
+                
+                console.log('Total points from completed lessons:', totalPoints);
+                
+                // Get category progress
+                const categoryProgress = await getCategoryProgress();
+                console.log('Category progress:', categoryProgress);
+                
+                // Check what achievements should unlock
+                console.log('=== ACHIEVEMENT ANALYSIS ===');
+                console.log(`Lessons completed: ${completedLessons}/10`);
+                console.log(`Total points: ${totalPoints}`);
+                console.log(`Vocabulary: ${categoryProgress.vocabulary}/4`);
+                console.log(`Grammar: ${categoryProgress.grammar}/2`);
+                console.log(`Culture: ${categoryProgress.culture}/2`);
+                console.log(`Conversation: ${categoryProgress.conversation}/2`);
+                
+                // Show what should unlock
+                if (completedLessons >= 1) console.log('✅ First Steps achievement should unlock');
+                if (completedLessons >= 3) console.log('✅ Getting Started achievement should unlock');
+                if (completedLessons >= 5) console.log('✅ Steady Progress achievement should unlock');
+                if (completedLessons >= 8) console.log('✅ Dedicated Learner achievement should unlock');
+                if (completedLessons >= 10) console.log('✅ Master Learner achievement should unlock');
+                
+                if (totalPoints >= 50) console.log('✅ Getting Points achievement should unlock');
+                if (totalPoints >= 100) console.log('✅ Century Club achievement should unlock');
+                if (totalPoints >= 200) console.log('✅ Double Century achievement should unlock');
+                
+                if (categoryProgress.vocabulary >= 4) console.log('✅ Vocabulary Master achievement should unlock');
+                if (categoryProgress.grammar >= 2) console.log('✅ Grammar Master achievement should unlock');
+                if (categoryProgress.culture >= 2) console.log('✅ Culture Master achievement should unlock');
+                if (categoryProgress.conversation >= 2) console.log('✅ Conversation Master achievement should unlock');
+                
+            } else {
+                console.log('No lesson progress data found');
+            }
+        } else {
+            console.log('UserProgressManager not available');
+        }
+        
+        // Now check and award achievements
+        console.log('=== CHECKING AND AWARDING ACHIEVEMENTS ===');
+        await checkAndAwardAchievements();
+        
+    } catch (error) {
+        console.error('Error testing achievement unlock:', error);
+    }
+};
+
+// Show current achievement status and progress
+window.showAchievementStatus = async function() {
+    console.log('=== CURRENT ACHIEVEMENT STATUS ===');
+    
+    if (!window.currentUser) {
+        console.log('No authenticated user found');
+        return;
+    }
+    
+    try {
+        // Get current achievements
+        console.log('Current achievements:', userAchievements);
+        
+        // Get real lesson progress
+        if (typeof UserProgressManager !== 'undefined') {
+            const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+            
+            if (userProgress && Array.isArray(userProgress)) {
+                const completedLessons = userProgress.filter(p => p.progress_percentage >= 100).length;
+                const categoryProgress = await getCategoryProgress();
+                
+                console.log('=== PROGRESS TOWARDS ACHIEVEMENTS ===');
+                console.log(`Lessons: ${completedLessons}/10 (${Math.round(completedLessons/10*100)}%)`);
+                console.log(`Vocabulary: ${categoryProgress.vocabulary}/4 (${Math.round(categoryProgress.vocabulary/4*100)}%)`);
+                console.log(`Grammar: ${categoryProgress.grammar}/2 (${Math.round(categoryProgress.grammar/2*100)}%)`);
+                console.log(`Culture: ${categoryProgress.culture}/2 (${Math.round(categoryProgress.culture/2*100)}%)`);
+                console.log(`Conversation: ${categoryProgress.conversation}/2 (${Math.round(categoryProgress.conversation/2*100)}%)`);
+                
+                // Show what's needed for next achievements
+                console.log('=== NEXT ACHIEVEMENTS TO UNLOCK ===');
+                if (completedLessons < 3) console.log(`📚 Need ${3 - completedLessons} more lesson(s) for "Getting Started"`);
+                if (completedLessons < 5) console.log(`📚 Need ${5 - completedLessons} more lesson(s) for "Steady Progress"`);
+                if (completedLessons < 8) console.log(`📚 Need ${8 - completedLessons} more lesson(s) for "Dedicated Learner"`);
+                if (completedLessons < 10) console.log(`📚 Need ${10 - completedLessons} more lesson(s) for "Master Learner"`);
+                
+                if (categoryProgress.vocabulary < 4) console.log(`📖 Need ${4 - categoryProgress.vocabulary} more vocab lesson(s) for "Vocabulary Master"`);
+                if (categoryProgress.grammar < 2) console.log(`📖 Need ${2 - categoryProgress.grammar} more grammar lesson(s) for "Grammar Master"`);
+                if (categoryProgress.culture < 2) console.log(`📖 Need ${2 - categoryProgress.culture} more culture lesson(s) for "Culture Master"`);
+                if (categoryProgress.conversation < 2) console.log(`📖 Need ${2 - categoryProgress.conversation} more conversation lesson(s) for "Conversation Master"`);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error showing achievement status:', error);
     }
 };
 
