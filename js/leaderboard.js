@@ -51,23 +51,44 @@ async function initializeLeaderboardPage() {
             // Load current user
             await loadCurrentUser();
             
-            // Load leaderboard data from Supabase
-            await loadLeaderboardData();
+            // Quick load current user data for immediate display
+            await quickLoadCurrentUserData();
+            
+            // Load full leaderboard data from Supabase in background
+            loadLeaderboardData().then(async () => {
+                // Ensure current user's data is accurate after loading full data
+                if (window.currentUser) {
+                    await syncCurrentUserProgress();
+                }
+                
+                // Hide loading indicator
+                hideFullLeaderboardLoading();
+                // Update display when full data is loaded
+                await displayLeaderboard();
+                updateStatsOverview();
+            });
             
             // Load user achievements if user is authenticated
             await loadUserAchievements();
             
             // Display leaderboard
-            displayLeaderboard();
+            await displayLeaderboard();
             
             // Display user achievements
-            displayUserAchievements();
+            await displayUserAchievements();
             
             // Update stats overview
             updateStatsOverview();
             
             // Check and award achievements
             await checkAndAwardAchievements();
+            
+            // Final sync to ensure current user data is accurate
+            if (window.currentUser) {
+                await syncCurrentUserProgress();
+                await displayLeaderboard();
+                updateStatsOverview();
+            }
             
         } catch (error) {
             console.error('Error initializing leaderboard page:', error);
@@ -122,10 +143,11 @@ async function loadCurrentUser() {
 // Load leaderboard data from Supabase
 async function loadLeaderboardData() {
     try {
-        console.log('Loading leaderboard data from Supabase...');
+        console.log('=== LOADING LEADERBOARD FROM REAL LESSON DATA ===');
+        console.log('Loading leaderboard data from Supabase with real lesson progress...');
         
-        // Wait a bit for Supabase to be ready
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait a bit for Supabase to be ready (reduced wait time)
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         if (typeof LeaderboardManager !== 'undefined') {
             try {
@@ -142,38 +164,151 @@ async function loadLeaderboardData() {
             }
         }
         
-        console.log('No leaderboard data from Supabase, creating from profiles table...');
-        // Try to get data from profiles table as fallback
+        console.log('No leaderboard data from LeaderboardManager, creating from profiles and lessons...');
+        // Create leaderboard data from profiles table and calculate actual progress
         try {
-            // Use the proper initializeSupabase function
             let supabaseClient = null;
             if (typeof initializeSupabase === 'function') {
                 supabaseClient = initializeSupabase();
             } else if (window.supabase) {
-                // Fallback to direct client creation if initializeSupabase is not available
                 const SUPABASE_URL = 'https://cbrqjobtcofkkpiauibj.supabase.co';
                 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNicnFqb2J0Y29ma2twaWF1aWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1ODM4MzEsImV4cCI6MjA3MjE1OTgzMX0.E01-rb7_nX_fyWnDJJBF9BO3hNmQquE77eHTLrRlSQ8';
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
             
             if (supabaseClient && typeof supabaseClient.from === 'function') {
+                // Get all profiles with a limit to improve performance
                 const { data: profilesData, error } = await supabaseClient
                     .from('profiles')
-                    .select('*')
-                    .order('points', { ascending: false })
-                    .limit(50);
+                    .select('id, full_name, email, avatar_url')
+                    .limit(20); // Reduced from 50 to 20 for faster loading
                 
                 if (profilesData && profilesData.length > 0) {
-                    leaderboardData = profilesData.map(profile => ({
-                        id: profile.id,
-                        full_name: profile.full_name || 'Unknown User',
-                        email: profile.email,
-                        total_points: profile.points || 0,
-                        lessons_completed: profile.lessons_completed || 0,
-                        current_streak: profile.current_streak || 0,
-                        avatar_url: null
-                    }));
-                    console.log('Leaderboard data created from profiles:', leaderboardData);
+                    console.log('Found profiles:', profilesData.length);
+                    
+                    // Calculate actual progress for each user (parallel processing)
+                    const userProgressPromises = profilesData.map(async (profile) => {
+                        try {
+                            if (typeof UserProgressManager !== 'undefined') {
+                                console.log(`Getting progress for user: ${profile.id}`);
+                                const userProgress = await UserProgressManager.getUserProgress(profile.id);
+                                
+                                if (userProgress && Array.isArray(userProgress)) {
+                                    console.log(`User ${profile.id} progress:`, userProgress);
+                                    
+                                    // Count completed lessons (100% progress)
+                                    const actualLessonsCompleted = userProgress.filter(p => p.progress_percentage >= 100).length;
+                                    
+                                    // Calculate total points from completed lessons
+                                    const lessonData = {
+                                        'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                                        'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                                        'conv-1': 22, 'conv-2': 28
+                                    };
+                                    
+                                    let actualTotalPoints = 0;
+                                    userProgress.forEach(progress => {
+                                        if (progress.progress_percentage >= 100) {
+                                            actualTotalPoints += lessonData[progress.lesson_id] || 0;
+                                            console.log(`Lesson ${progress.lesson_id} completed: +${lessonData[progress.lesson_id]} points`);
+                                        }
+                                    });
+                                    
+                                    // Get streak - only calculate for current user, use default for others
+                                    let actualStreak = 0;
+                                    if (profile.id === window.currentUser?.id) {
+                                        actualStreak = getCurrentStreak();
+                                        console.log(`Current user streak: ${actualStreak}`);
+                                    }
+                                    
+                                    const userData = {
+                                        id: profile.id,
+                                        full_name: profile.full_name || 'Unknown User',
+                                        email: profile.email,
+                                        total_points: actualTotalPoints || 0,
+                                        lessons_completed: actualLessonsCompleted || 0,
+                                        current_streak: actualStreak || 0,
+                                        avatar_url: profile.avatar_url || null
+                                    };
+                                    
+                                    console.log(`User ${profile.id} final data:`, userData);
+                                    return userData;
+                                } else {
+                                    console.log(`No progress data for user ${profile.id}`);
+                                }
+                            } else {
+                                console.log('UserProgressManager not available');
+                            }
+                        } catch (progressError) {
+                            console.error('Error getting user progress for', profile.id, ':', progressError);
+                        }
+                        
+                        // Return basic profile data if progress fetch fails
+                        return {
+                            id: profile.id,
+                            full_name: profile.full_name || 'Unknown User',
+                            email: profile.email,
+                            total_points: 0,
+                            lessons_completed: 0,
+                            current_streak: 0,
+                            avatar_url: profile.avatar_url || null
+                        };
+                    });
+                    
+                    // Wait for all progress calculations to complete
+                    const newLeaderboardData = await Promise.all(userProgressPromises);
+                    
+                    // Sort by total points (highest first)
+                    newLeaderboardData.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+                    
+                    // Preserve current user's accurate data if it exists
+                    if (window.currentUser) {
+                        const currentUserIndex = newLeaderboardData.findIndex(user => user.id === window.currentUser.id);
+                        if (currentUserIndex !== -1) {
+                            console.log('Updating current user data with real lesson progress...');
+                            
+                            // Update with current user's actual progress
+                            const currentUserProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+                            if (currentUserProgress && Array.isArray(currentUserProgress)) {
+                                const actualLessonsCompleted = currentUserProgress.filter(p => p.progress_percentage >= 100).length;
+                                
+                                const lessonData = {
+                                    'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                                    'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                                    'conv-1': 22, 'conv-2': 28
+                                };
+                                
+                                let actualTotalPoints = 0;
+                                currentUserProgress.forEach(progress => {
+                                    if (progress.progress_percentage >= 100) {
+                                        actualTotalPoints += lessonData[progress.lesson_id] || 0;
+                                        console.log(`Current user lesson ${progress.lesson_id}: +${lessonData[progress.lesson_id]} points`);
+                                    }
+                                });
+                                
+                                const actualStreak = getCurrentStreak();
+                                
+                                // Update current user's data with accurate values
+                                newLeaderboardData[currentUserIndex].lessons_completed = actualLessonsCompleted;
+                                newLeaderboardData[currentUserIndex].total_points = actualTotalPoints;
+                                newLeaderboardData[currentUserIndex].current_streak = actualStreak;
+                                
+                                // Re-sort after updating current user
+                                newLeaderboardData.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+                                
+                                console.log('Updated current user data in leaderboard:', {
+                                    lessons_completed: actualLessonsCompleted,
+                                    total_points: actualTotalPoints,
+                                    current_streak: actualStreak
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Update the global leaderboard data
+                    leaderboardData = newLeaderboardData;
+                    
+                    console.log('Final leaderboard data with real lesson progress:', leaderboardData);
                     return;
                 }
             }
@@ -181,14 +316,13 @@ async function loadLeaderboardData() {
             console.error('Failed to load from profiles table:', fallbackError);
         }
         
-        // Final fallback to demo data
-        console.log('Using demo data as final fallback');
-        leaderboardData = getDemoLeaderboardData();
+        // If no data found, show empty state
+        console.log('No leaderboard data found in database');
+        leaderboardData = [];
         
     } catch (error) {
         console.error('Failed to load leaderboard from Supabase:', error);
-        // Fallback to demo data
-        leaderboardData = getDemoLeaderboardData();
+        leaderboardData = [];
     }
 }
 
@@ -305,10 +439,17 @@ async function checkAndAwardAchievements() {
                 totalPoints = localProgress.points || 0;
             }
             
-            console.log('User data from localStorage fallback - Points:', totalPoints, 'Lessons:', completedLessons);
-        }
-        
-        const achievements = [];
+                    console.log('User data from localStorage fallback - Points:', totalPoints, 'Lessons:', completedLessons);
+    }
+    
+    // Log real progress for debugging achievements
+    console.log('Real progress for achievements:', {
+        completedLessons,
+        totalPoints,
+        userProgress: userProgress ? userProgress.length : 0
+    });
+    
+    const achievements = [];
         
         // Check lesson completion achievements
         if (completedLessons >= 1 && !hasAchievement('first_lesson')) {
@@ -588,11 +729,16 @@ function getCategoryProgress() {
 }
 
 // Display leaderboard
-function displayLeaderboard() {
+async function displayLeaderboard() {
     const leaderboardContainer = document.querySelector('.leaderboard-list');
     if (!leaderboardContainer) {
         console.error('Leaderboard container not found');
         return;
+    }
+
+    // Ensure current user's data is always accurate before displaying
+    if (window.currentUser) {
+        await syncCurrentUserProgress();
     }
 
     // Clear existing content
@@ -645,7 +791,7 @@ function displayLeaderboard() {
 }
 
 // Display user achievements
-function displayUserAchievements() {
+async function displayUserAchievements() {
     const achievementsContainer = document.querySelector('.user-achievements');
     if (!achievementsContainer) {
         console.log('Achievements container not found');
@@ -655,8 +801,8 @@ function displayUserAchievements() {
     // Clear existing content
     achievementsContainer.innerHTML = '';
 
-    // Get user's current progress
-    const userProgress = getUserCurrentProgress();
+    // Get user's current progress from database
+    const userProgress = await getUserCurrentProgress();
     
     // Define all possible achievements
     const allAchievements = [
@@ -778,9 +924,9 @@ function displayUserAchievements() {
     const earnedAchievements = userAchievements.map(a => a.achievement_type);
     
     // Create achievement items for all achievements
-    allAchievements.forEach(achievement => {
+    for (const achievement of allAchievements) {
         const isEarned = earnedAchievements.includes(achievement.type);
-        const isUnlocked = checkAchievementRequirement(achievement, userProgress);
+        const isUnlocked = await checkAchievementRequirement(achievement, userProgress);
         
         const achievementItem = document.createElement('div');
         achievementItem.className = `achievement-item ${isEarned ? 'earned' : isUnlocked ? 'unlocked' : 'locked'}`;
@@ -801,29 +947,59 @@ function displayUserAchievements() {
         `;
         
         achievementsContainer.appendChild(achievementItem);
-    });
+    }
 }
 
 // Check if achievement requirement is met
-function checkAchievementRequirement(achievement, userProgress) {
+async function checkAchievementRequirement(achievement, userProgress) {
+    // Ensure we have the latest progress data
+    if (!userProgress || Object.keys(userProgress).length === 0) {
+        userProgress = await getUserCurrentProgress();
+    }
+    
+    let requirementMet = false;
+    
     switch (achievement.category) {
         case 'lessons':
-            return userProgress.completedLessons >= achievement.requirement;
+            requirementMet = userProgress.completedLessons >= achievement.requirement;
+            break;
         case 'points':
-            return userProgress.points >= achievement.requirement;
+            requirementMet = userProgress.points >= achievement.requirement;
+            break;
         case 'vocabulary':
-            return userProgress.vocabularyCompleted >= achievement.requirement;
+            requirementMet = userProgress.vocabularyCompleted >= achievement.requirement;
+            break;
         case 'grammar':
-            return userProgress.grammarCompleted >= achievement.requirement;
+            requirementMet = userProgress.grammarCompleted >= achievement.requirement;
+            break;
         case 'culture':
-            return userProgress.cultureCompleted >= achievement.requirement;
+            requirementMet = userProgress.cultureCompleted >= achievement.requirement;
+            break;
         case 'conversation':
-            return userProgress.conversationCompleted >= achievement.requirement;
+            requirementMet = userProgress.conversationCompleted >= achievement.requirement;
+            break;
         case 'streak':
-            return userProgress.currentStreak >= achievement.requirement;
+            requirementMet = userProgress.currentStreak >= achievement.requirement;
+            break;
         default:
-            return false;
+            requirementMet = false;
     }
+    
+    // Log achievement check for debugging
+    console.log(`Achievement ${achievement.type} (${achievement.name}):`, {
+        category: achievement.category,
+        requirement: achievement.requirement,
+        current: userProgress[achievement.category === 'lessons' ? 'completedLessons' : 
+                            achievement.category === 'points' ? 'points' :
+                            achievement.category === 'vocabulary' ? 'vocabularyCompleted' :
+                            achievement.category === 'grammar' ? 'grammarCompleted' :
+                            achievement.category === 'culture' ? 'cultureCompleted' :
+                            achievement.category === 'conversation' ? 'conversationCompleted' :
+                            achievement.category === 'streak' ? 'currentStreak' : 'unknown'],
+        requirementMet
+    });
+    
+    return requirementMet;
 }
 
 // Get requirement text for locked achievements
@@ -849,56 +1025,145 @@ function getRequirementText(achievement) {
 }
 
 // Get user's current progress for achievement checking
-function getUserCurrentProgress() {
-    const lessonIds = ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4', 'grammar-1', 'grammar-2', 'culture-1', 'culture-2', 'conv-1', 'conv-2'];
-    let completedLessons = 0;
-    let vocabularyCompleted = 0;
-    let grammarCompleted = 0;
-    let cultureCompleted = 0;
-    let conversationCompleted = 0;
+async function getUserCurrentProgress() {
+    // If no current user, return default values
+    if (!window.currentUser) {
+        return {
+            completedLessons: 0,
+            points: 0,
+            vocabularyCompleted: 0,
+            grammarCompleted: 0,
+            cultureCompleted: 0,
+            conversationCompleted: 0,
+            currentStreak: 0
+        };
+    }
     
-    // Count completed lessons by category
-    lessonIds.forEach(lessonId => {
-        const progress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
-        if (parseInt(progress) >= 100) {
-            completedLessons++;
-            
-            if (lessonId.startsWith('vocab-')) vocabularyCompleted++;
-            else if (lessonId.startsWith('grammar-')) grammarCompleted++;
-            else if (lessonId.startsWith('culture-')) cultureCompleted++;
-            else if (lessonId.startsWith('conv-')) conversationCompleted++;
+    try {
+        // Try to get real progress from database first
+        if (typeof UserProgressManager !== 'undefined') {
+            const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+            if (userProgress && Array.isArray(userProgress)) {
+                const lessonIds = ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4', 'grammar-1', 'grammar-2', 'culture-1', 'culture-2', 'conv-1', 'conv-2'];
+                let completedLessons = 0;
+                let vocabularyCompleted = 0;
+                let grammarCompleted = 0;
+                let cultureCompleted = 0;
+                let conversationCompleted = 0;
+                
+                // Calculate points from completed lessons
+                const lessonData = {
+                    'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                    'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                    'conv-1': 22, 'conv-2': 28
+                };
+                
+                let calculatedPoints = 0;
+                
+                // Count completed lessons by category from database
+                userProgress.forEach(progress => {
+                    if (progress.progress_percentage >= 100) {
+                        completedLessons++;
+                        calculatedPoints += lessonData[progress.lesson_id] || 0;
+                        
+                        if (progress.lesson_id.startsWith('vocab-')) vocabularyCompleted++;
+                        else if (progress.lesson_id.startsWith('grammar-')) grammarCompleted++;
+                        else if (progress.lesson_id.startsWith('culture-')) cultureCompleted++;
+                        else if (progress.lesson_id.startsWith('conv-')) conversationCompleted++;
+                    }
+                });
+                
+                // Get current streak
+                const currentStreak = getCurrentStreak();
+                
+                console.log('Real progress from database for achievements:', {
+                    completedLessons,
+                    points: calculatedPoints,
+                    vocabularyCompleted,
+                    grammarCompleted,
+                    cultureCompleted,
+                    conversationCompleted,
+                    currentStreak
+                });
+                
+                return {
+                    completedLessons,
+                    points: calculatedPoints,
+                    vocabularyCompleted,
+                    grammarCompleted,
+                    cultureCompleted,
+                    conversationCompleted,
+                    currentStreak
+                };
+            }
         }
-    });
-    
-    // Calculate points
-    const lessonData = {
-        'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
-        'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
-        'conv-1': 22, 'conv-2': 28
-    };
-    
-    let calculatedPoints = 0;
-    lessonIds.forEach(lessonId => {
-        const progress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
-        if (parseInt(progress) >= 100) {
-            calculatedPoints += lessonData[lessonId] || 0;
-        }
-    });
-    
-    // Get points from localStorage or use calculated
-    const savedProgress = localStorage.getItem('userProgress');
-    const userProgress = savedProgress ? JSON.parse(savedProgress) : { points: 0 };
-    const finalPoints = userProgress.points > 0 ? userProgress.points : calculatedPoints;
-    
-    return {
-        completedLessons,
-        points: finalPoints,
-        vocabularyCompleted,
-        grammarCompleted,
-        cultureCompleted,
-        conversationCompleted,
-        currentStreak: getCurrentStreak()
-    };
+        
+        // Fallback to localStorage if database is not available
+        console.log('Falling back to localStorage for achievement progress...');
+        const lessonIds = ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4', 'grammar-1', 'grammar-2', 'culture-1', 'culture-2', 'conv-1', 'conv-2'];
+        let completedLessons = 0;
+        let vocabularyCompleted = 0;
+        let grammarCompleted = 0;
+        let cultureCompleted = 0;
+        let conversationCompleted = 0;
+        
+        // Count completed lessons by category from localStorage
+        lessonIds.forEach(lessonId => {
+            const progress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
+            if (parseInt(progress) >= 100) {
+                completedLessons++;
+                
+                if (lessonId.startsWith('vocab-')) vocabularyCompleted++;
+                else if (lessonId.startsWith('grammar-')) grammarCompleted++;
+                else if (lessonId.startsWith('culture-')) cultureCompleted++;
+                else if (lessonId.startsWith('conv-')) conversationCompleted++;
+            }
+        });
+        
+        // Calculate points from localStorage
+        const lessonData = {
+            'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+            'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+            'conv-1': 22, 'conv-2': 28
+        };
+        
+        let calculatedPoints = 0;
+        lessonIds.forEach(lessonId => {
+            const progress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
+            if (parseInt(progress) >= 100) {
+                calculatedPoints += lessonData[lessonId] || 0;
+            }
+        });
+        
+        // Get points from localStorage or use calculated
+        const savedProgress = localStorage.getItem('userProgress');
+        const userProgress = savedProgress ? JSON.parse(savedProgress) : { points: 0 };
+        const finalPoints = userProgress.points > 0 ? userProgress.points : calculatedPoints;
+        
+        return {
+            completedLessons,
+            points: finalPoints,
+            vocabularyCompleted,
+            grammarCompleted,
+            cultureCompleted,
+            conversationCompleted,
+            currentStreak: getCurrentStreak()
+        };
+        
+    } catch (error) {
+        console.error('Error getting user progress for achievements:', error);
+        
+        // Return default values on error
+        return {
+            completedLessons: 0,
+            points: 0,
+            vocabularyCompleted: 0,
+            grammarCompleted: 0,
+            cultureCompleted: 0,
+            conversationCompleted: 0,
+            currentStreak: 0
+        };
+    }
 }
 
 // Get medal icon for top 3 ranks
@@ -1049,14 +1314,44 @@ function getDemoLeaderboardData() {
 async function refreshLeaderboard() {
     console.log('Refreshing leaderboard...');
     
-    // Force refresh with latest localStorage data
-    leaderboardData = getDemoLeaderboardData();
-    
-    await loadUserAchievements();
-    displayLeaderboard();
-    displayUserAchievements();
-    updateStatsOverview();
-    showSuccessMessage('Leaderboard refreshed!');
+    try {
+        // Show loading state
+        const refreshButton = document.querySelector('button[onclick="refreshLeaderboard()"]');
+        const originalText = refreshButton.innerHTML;
+        refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        refreshButton.disabled = true;
+        
+        // Clear existing data and show loading
+        leaderboardData = [];
+        displayLeaderboard(); // This will show loading state
+        
+        // Reload data from database
+        await loadLeaderboardData();
+        
+        // Reload user achievements
+        await loadUserAchievements();
+        
+        // Ensure current user's data is accurate
+        if (window.currentUser) {
+            await syncCurrentUserProgress();
+        }
+        
+        // Update displays
+        await displayLeaderboard();
+        await displayUserAchievements();
+        updateStatsOverview();
+        
+        showSuccessMessage('Leaderboard refreshed with latest database data!');
+        
+    } catch (error) {
+        console.error('Error refreshing leaderboard:', error);
+        showErrorMessage('Failed to refresh leaderboard. Please try again.');
+    } finally {
+        // Restore button state
+        const refreshButton = document.querySelector('button[onclick="refreshLeaderboard()"]');
+        refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        refreshButton.disabled = false;
+    }
 }
 
 // Update stats overview
@@ -1118,6 +1413,36 @@ function switchLeaderboardTab(tab) {
 window.initializeLeaderboardPage = initializeLeaderboardPage;
 window.refreshLeaderboard = refreshLeaderboard;
 window.switchLeaderboardTab = switchLeaderboardTab;
+window.quickLoadCurrentUserData = quickLoadCurrentUserData;
+window.syncCurrentUserProgress = syncCurrentUserProgress;
+
+// Force refresh from real lesson data (for debugging)
+window.forceRefreshFromLessons = async function() {
+    console.log('Force refreshing leaderboard from real lesson data...');
+    try {
+        // Clear existing data
+        leaderboardData = [];
+        
+        // Force reload from database with real lesson progress
+        await loadLeaderboardData();
+        
+        // Ensure current user data is accurate
+        if (window.currentUser) {
+            await syncCurrentUserProgress();
+        }
+        
+        // Update display
+        await displayLeaderboard();
+        updateStatsOverview();
+        
+        console.log('Force refresh completed with real lesson data');
+        showSuccessMessage('Leaderboard refreshed with real lesson data!');
+        
+    } catch (error) {
+        console.error('Error in force refresh:', error);
+        showErrorMessage('Failed to refresh from lesson data');
+    }
+};
 
 // Debug function to check current progress
 window.debugLeaderboard = function() {
@@ -1148,6 +1473,63 @@ window.debugLeaderboard = function() {
     console.log('Total completed lessons:', completedLessons);
     console.log('========================');
 };
+
+// Function to sync current user's progress with lessons page data
+async function syncCurrentUserProgress() {
+    if (!window.currentUser) return;
+    
+    try {
+        console.log('Syncing current user progress with lessons data...');
+        
+        // Get current user's actual progress from user_progress table
+        if (typeof UserProgressManager !== 'undefined') {
+            const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+            if (userProgress && Array.isArray(userProgress)) {
+                // Count completed lessons (100% progress)
+                const actualLessonsCompleted = userProgress.filter(p => p.progress_percentage >= 100).length;
+                
+                // Calculate total points from completed lessons
+                const lessonData = {
+                    'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                    'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                    'conv-1': 22, 'conv-2': 28
+                };
+                
+                let actualTotalPoints = 0;
+                userProgress.forEach(progress => {
+                    if (progress.progress_percentage >= 100) {
+                        actualTotalPoints += lessonData[progress.lesson_id] || 0;
+                    }
+                });
+                
+                // Get actual streak
+                const actualStreak = getCurrentStreak();
+                
+                console.log('Current user actual progress:', {
+                    lessons_completed: actualLessonsCompleted,
+                    total_points: actualTotalPoints,
+                    current_streak: actualStreak
+                });
+                
+                // Update current user's data in leaderboard if it exists
+                const currentUserIndex = leaderboardData.findIndex(user => user.id === window.currentUser.id);
+                if (currentUserIndex !== -1) {
+                    // Update the data
+                    leaderboardData[currentUserIndex].lessons_completed = actualLessonsCompleted;
+                    leaderboardData[currentUserIndex].total_points = actualTotalPoints;
+                    leaderboardData[currentUserIndex].current_streak = actualStreak;
+                    
+                    // Re-sort leaderboard after updating current user
+                    leaderboardData.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+                    
+                    console.log('Updated current user data in leaderboard');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error syncing current user progress:', error);
+    }
+}
 
 // Function to manually sync lesson progress to Supabase
 window.syncLessonProgressToSupabase = async function() {
@@ -1207,6 +1589,97 @@ window.syncLessonProgressToSupabase = async function() {
     }
 };
 
+// Show loading indicator for full leaderboard
+function showFullLeaderboardLoading() {
+    const leaderboardContainer = document.querySelector('.leaderboard-list');
+    if (leaderboardContainer) {
+        // Add loading indicator below current user data
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'loading-indicator';
+        loadingIndicator.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--medium-gray);">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading full leaderboard...</p>
+            </div>
+        `;
+        leaderboardContainer.appendChild(loadingIndicator);
+    }
+}
+
+// Hide loading indicator
+function hideFullLeaderboardLoading() {
+    const loadingIndicator = document.querySelector('.loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.remove();
+    }
+}
+
+// Quick load current user data for immediate display
+async function quickLoadCurrentUserData() {
+    if (!window.currentUser || typeof UserProgressManager === 'undefined') return;
+    
+    try {
+        console.log('Quick loading current user data from real lesson progress...');
+        const userProgress = await UserProgressManager.getUserProgress(window.currentUser.id);
+        
+        if (userProgress && Array.isArray(userProgress)) {
+            console.log('Raw lesson progress data:', userProgress);
+            
+            // Calculate current user's progress from real lesson data
+            const actualLessonsCompleted = userProgress.filter(p => p.progress_percentage >= 100).length;
+            
+            const lessonData = {
+                'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                'conv-1': 22, 'conv-2': 28
+            };
+            
+            let actualTotalPoints = 0;
+            userProgress.forEach(progress => {
+                if (progress.progress_percentage >= 100) {
+                    actualTotalPoints += lessonData[progress.lesson_id] || 0;
+                    console.log(`Lesson ${progress.lesson_id} completed: +${lessonData[progress.lesson_id]} points`);
+                }
+            });
+            
+            const actualStreak = getCurrentStreak();
+            
+            console.log('Calculated from real lesson data:', {
+                lessons_completed: actualLessonsCompleted,
+                total_points: actualTotalPoints,
+                current_streak: actualStreak
+            });
+            
+            // Create initial leaderboard with current user's real data
+            leaderboardData = [{
+                id: window.currentUser.id,
+                full_name: window.currentUser.full_name || 'Current User',
+                email: window.currentUser.email,
+                total_points: actualTotalPoints || 0,
+                lessons_completed: actualLessonsCompleted || 0,
+                current_streak: actualStreak || 0,
+                avatar_url: null
+            }];
+            
+            console.log('Current user real data loaded quickly:', leaderboardData[0]);
+            
+            // Display immediately with current user data
+            await displayLeaderboard();
+            updateStatsOverview();
+            
+            // Show loading indicator for full leaderboard
+            showFullLeaderboardLoading();
+            
+            return true;
+        } else {
+            console.log('No lesson progress data found for current user');
+        }
+    } catch (error) {
+        console.error('Error quick loading current user data:', error);
+    }
+    return false;
+}
+
 // Stop auto-sync when user leaves the page
 window.addEventListener('beforeunload', function() {
     stopLeaderboardAutoSync();
@@ -1235,8 +1708,8 @@ function setupLeaderboardAutoSync() {
                 console.log('Auto-syncing leaderboard data...');
                 await loadLeaderboardData();
                 await loadUserAchievements();
-                displayLeaderboard();
-                displayUserAchievements();
+                await displayLeaderboard();
+                await displayUserAchievements();
                 updateStatsOverview();
                 console.log('Leaderboard auto-sync completed successfully');
             } catch (error) {
@@ -1245,7 +1718,45 @@ function setupLeaderboardAutoSync() {
         }
     }, 60000); // 60 seconds
     
-    console.log('Leaderboard auto-sync set up every 60 seconds');
+    // Set up visibility change listener to refresh data when page becomes visible
+    document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden && window.currentUser) {
+            console.log('Page became visible, refreshing with real lesson data...');
+            try {
+                // Force refresh from real lesson progress
+                await loadLeaderboardData();
+                await syncCurrentUserProgress();
+                await displayLeaderboard();
+                updateStatsOverview();
+                
+                // Check for new achievements when page becomes visible
+                await checkAndAwardAchievements();
+            } catch (error) {
+                console.error('Error refreshing on visibility change:', error);
+            }
+        }
+    });
+    
+    // Set up focus listener to refresh data when window gains focus
+    window.addEventListener('focus', async () => {
+        if (window.currentUser) {
+            console.log('Window gained focus, refreshing with real lesson data...');
+            try {
+                // Force refresh from real lesson progress
+                await loadLeaderboardData();
+                await syncCurrentUserProgress();
+                await displayLeaderboard();
+                updateStatsOverview();
+                
+                // Check for new achievements when window gains focus
+                await checkAndAwardAchievements();
+            } catch (error) {
+                console.error('Error refreshing on focus:', error);
+            }
+        }
+    });
+    
+    console.log('Leaderboard auto-sync set up every 60 seconds with visibility/focus listeners');
 }
 
 // Stop leaderboard automatic syncing
@@ -1255,4 +1766,39 @@ function stopLeaderboardAutoSync() {
         window.leaderboardAutoSyncInterval = null;
         console.log('Leaderboard auto-sync stopped');
     }
+}
+
+// Show achievement notification
+function showAchievementNotification(achievement) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'achievement-notification';
+    notification.innerHTML = `
+        <div class="achievement-notification-content">
+            <i class="fas ${achievement.icon || 'fa-star'}" style="color: #FFD700;"></i>
+            <div class="achievement-notification-text">
+                <h4>Achievement Unlocked!</h4>
+                <p>${achievement.name}</p>
+                <small>${achievement.description}</small>
+            </div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Show animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 5000);
 }

@@ -98,9 +98,73 @@
             background: #f8f9fa;
         }
         
+        /* Achievement Notification Styles */
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+        
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+        
+        .achievement-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .achievement-notification-content i {
+            font-size: 2rem;
+            animation: bounce 0.6s ease;
+        }
+        
+        .achievement-notification-text h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .achievement-notification-text p {
+            margin: 0 0 0.25rem 0;
+            font-weight: 600;
+        }
+        
+        .achievement-notification-text small {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
         .leaderboard-row.current-user {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(229, 90, 43, 0.1));
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 140, 0, 0.1));
             border-left: 4px solid var(--primary-orange);
+            font-weight: 600;
+        }
+        
+        .leaderboard-row.current-user:hover {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 140, 0, 0.15));
         }
         
         .rank {
@@ -119,6 +183,16 @@
         
         .rank-3 {
             color: #CD7F32;
+        }
+        
+        .rank-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .medal-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
         }
         
         .user-info {
@@ -295,6 +369,18 @@
             color: var(--primary-orange);
         }
         
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+        
+        .loading-state i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-orange);
+        }
+        
         .stats-overview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -404,6 +490,10 @@
                 </div>
                 
                 <div class="leaderboard-list">
+                    <div class="loading-state" id="leaderboardLoading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading leaderboard data it will take a while...</p>
+                    </div>
                     <!-- Dynamic leaderboard content will be loaded here -->
                 </div>
             </div>
