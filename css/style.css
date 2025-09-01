@@ -198,10 +198,7 @@ body {
         display: block !important;
     }
     
-    /* Hide sign out button in hamburger menu on desktop */
-    .nav-menu .sign-out-btn {
-        display: none !important;
-    }
+
     
     .nav-menu.active .sign-out-btn:hover {
         background: linear-gradient(135deg, #c0392b, #a93226) !important;
@@ -245,6 +242,13 @@ body {
     }
     
 
+}
+
+/* Hide sign out button in hamburger menu on desktop only */
+@media (min-width: 769px) {
+    .nav-menu .sign-out-btn {
+        display: none !important;
+    }
 }
 
 /* Buttons */
