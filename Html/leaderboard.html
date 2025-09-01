@@ -14,6 +14,69 @@
             background: linear-gradient(135deg, var(--light-gray) 0%, #e9ecef 100%);
         }
         
+        /* Mobile-friendly container adjustments */
+        @media (max-width: 768px) {
+            .leaderboard-container {
+                padding-top: 80px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .leaderboard-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .leaderboard-title {
+                font-size: 2rem;
+            }
+            
+            .leaderboard-subtitle {
+                font-size: 1rem;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .leaderboard-tabs {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .tab-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .leaderboard-container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .leaderboard-header {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .leaderboard-title {
+                font-size: 1.75rem;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .tab-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+        
 
         
         .leaderboard-header {
@@ -165,6 +228,186 @@
         
         .leaderboard-row.current-user:hover {
             background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 140, 0, 0.15));
+        }
+        
+        /* Mobile-friendly responsive design */
+        @media (max-width: 768px) {
+            .table-header {
+                grid-template-columns: 60px 1fr 80px 80px 80px;
+                gap: 0.5rem;
+                padding: 1rem 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .leaderboard-row {
+                grid-template-columns: 60px 1fr 80px 80px 80px;
+                gap: 0.5rem;
+                padding: 1rem 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .leaderboard-row .rank {
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+            
+            .leaderboard-row .user-details h4 {
+                font-size: 1rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .leaderboard-row .user-details p {
+                font-size: 0.8rem;
+                margin: 0;
+            }
+            
+            .leaderboard-row .score,
+            .leaderboard-row .lessons-completed,
+            .leaderboard-row .streak {
+                font-size: 1rem;
+                font-weight: 600;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .table-header {
+                grid-template-columns: 50px 1fr 70px 70px 70px;
+                gap: 0.25rem;
+                padding: 0.75rem 0.25rem;
+                font-size: 0.8rem;
+            }
+            
+            .leaderboard-row {
+                grid-template-columns: 50px 1fr 70px 70px 70px;
+                gap: 0.25rem;
+                padding: 0.75rem 0.25rem;
+                font-size: 0.8rem;
+            }
+            
+            .leaderboard-row .rank {
+                font-size: 1rem;
+            }
+            
+            .leaderboard-row .user-details h4 {
+                font-size: 0.9rem;
+            }
+            
+            .leaderboard-row .user-details p {
+                font-size: 0.7rem;
+            }
+            
+            .leaderboard-row .score,
+            .leaderboard-row .lessons-completed,
+            .leaderboard-row .streak {
+                font-size: 0.9rem;
+            }
+            
+            /* Ensure all columns are visible on very small screens */
+            .leaderboard-table {
+                overflow-x: auto;
+                min-width: 100%;
+            }
+            
+            .table-header,
+            .leaderboard-row {
+                min-width: 400px; /* Ensure minimum width for all columns */
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .table-header {
+                grid-template-columns: 45px 1fr 65px 65px 65px;
+                gap: 0.2rem;
+                padding: 0.5rem 0.2rem;
+                font-size: 0.75rem;
+            }
+            
+            .leaderboard-row {
+                grid-template-columns: 45px 1fr 65px 65px 65px;
+                gap: 0.2rem;
+                padding: 0.5rem 0.2rem;
+                font-size: 0.75rem;
+            }
+            
+            .leaderboard-row .rank {
+                font-size: 0.9rem;
+            }
+            
+            .leaderboard-row .user-details h4 {
+                font-size: 0.8rem;
+            }
+            
+            .leaderboard-row .user-details p {
+                font-size: 0.65rem;
+            }
+            
+            .leaderboard-row .score,
+            .leaderboard-row .lessons-completed,
+            .leaderboard-row .streak {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Touch-friendly improvements for mobile */
+        @media (max-width: 768px) {
+            .leaderboard-row {
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(255, 165, 0, 0.1);
+            }
+            
+            .leaderboard-row:active {
+                background: rgba(255, 165, 0, 0.05);
+            }
+            
+            .tab-button {
+                min-height: 44px; /* Touch-friendly minimum height */
+                min-width: 44px; /* Touch-friendly minimum width */
+            }
+            
+            /* Ensure table is scrollable on small screens */
+            .leaderboard-table {
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            
+            .leaderboard-list {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+        }
+        
+        /* Loading state improvements for mobile */
+        .loading-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--medium-gray);
+        }
+        
+        .loading-state i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-orange);
+        }
+        
+        .loading-state p {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .loading-state {
+                padding: 1.5rem;
+            }
+            
+            .loading-state i {
+                font-size: 1.5rem;
+            }
+            
+            .loading-state p {
+                font-size: 0.9rem;
+            }
         }
         
         .rank {
