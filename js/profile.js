@@ -10,6 +10,15 @@ async function initializeProfilePage() {
         console.log('Initializing profile page...');
         
         try {
+            // Wait for currentUser to be loaded (max 3 seconds)
+            let attempts = 0;
+            while (!window.currentUser && attempts < 30) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            console.log('Current user after waiting:', window.currentUser);
+            
             // Load user profile data
             await loadUserProfile();
             
@@ -19,9 +28,18 @@ async function initializeProfilePage() {
             // Load user statistics
             await loadUserStatistics();
             
-
+            // Force multiple updates to ensure data is displayed
+            setTimeout(() => {
+                updateProfileDisplay();
+            }, 100);
             
-
+            setTimeout(() => {
+                updateProfileDisplay();
+            }, 500);
+            
+            setTimeout(() => {
+                updateProfileDisplay();
+            }, 1000);
             
         } catch (error) {
             console.error('Error initializing profile page:', error);
@@ -37,7 +55,9 @@ async function loadUserProfile() {
         let supabaseUser = null;
         
         // Try to get from global currentUser first
-        if (typeof currentUser !== 'undefined' && currentUser) {
+        if (window.currentUser) {
+            supabaseUser = window.currentUser;
+        } else if (typeof currentUser !== 'undefined' && currentUser) {
             supabaseUser = currentUser;
         } else {
             // Try to get from localStorage
@@ -148,13 +168,11 @@ function loadFromLocalStorage() {
 
 // Update profile display
 function updateProfileDisplay() {
-    if (!currentUserProfile) return;
+    // Use window.currentUser if available, otherwise fall back to currentUserProfile
+    const userData = window.currentUser || currentUserProfile;
+    if (!userData) return;
     
-    // Update navigation welcome message
-    const userWelcome = document.querySelector('.user-welcome');
-    if (userWelcome) {
-        userWelcome.textContent = `Welcome, ${currentUserProfile.full_name}!`;
-    }
+    console.log('Updating profile display with user data:', userData);
     
     // Update profile header
     const profileAvatar = document.getElementById('profileAvatar');
@@ -162,15 +180,16 @@ function updateProfileDisplay() {
     const profileEmail = document.getElementById('profileEmail');
     
     if (profileAvatar) {
-        profileAvatar.textContent = currentUserProfile.full_name.charAt(0).toUpperCase();
+        const displayName = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
+        profileAvatar.textContent = displayName.charAt(0).toUpperCase();
     }
     
     if (profileName) {
-        profileName.textContent = currentUserProfile.full_name;
+        profileName.textContent = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
     }
     
     if (profileEmail) {
-        profileEmail.textContent = currentUserProfile.email;
+        profileEmail.textContent = userData.email || 'user@example.com';
     }
     
     // Update form fields
@@ -178,11 +197,11 @@ function updateProfileDisplay() {
     const emailInput = document.getElementById('email');
     
     if (displayNameInput) {
-        displayNameInput.value = currentUserProfile.full_name;
+        displayNameInput.value = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
     }
     
     if (emailInput) {
-        emailInput.value = currentUserProfile.email;
+        emailInput.value = userData.email || 'user@example.com';
     }
 }
 

@@ -653,6 +653,15 @@ async function initializeLessonsPage() {
     if (window.location.pathname.includes('../Html/Lessons.html')) {
         console.log('Initializing lessons page...');
         
+        // Wait for currentUser to be loaded (max 3 seconds)
+        let attempts = 0;
+        while (!window.currentUser && attempts < 30) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        console.log('Current user after waiting:', window.currentUser);
+        
         // Load user progress from Supabase/localStorage
         await loadUserProgress();
         
@@ -886,7 +895,7 @@ function updateStreakOnLessonCompletion() {
 async function loadUserProgress() {
     try {
         // First, try to get authenticated user from Supabase if not already loaded
-        if (!window.currentUser || window.currentUser.id.startsWith('demo_user_')) {
+        if (!window.currentUser || (window.currentUser && window.currentUser.id && window.currentUser.id.startsWith('demo_user_'))) {
             try {
                 if (typeof initializeSupabase === 'function') {
                     const supabaseClient = initializeSupabase();

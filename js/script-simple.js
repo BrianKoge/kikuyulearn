@@ -6,12 +6,16 @@ let currentUser = null;
 let lastSignupAttempt = 0; // Track last signup attempt time
 let lastLoginAttempt = 0; // Track last login attempt time
 
+// Set global currentUser for other scripts
+window.currentUser = null;
+
 // Load user from localStorage on script load
 async function loadStoredUser() {
     try {
         const storedUser = localStorage.getItem('kikuyulearn_user');
         if (storedUser) {
             currentUser = JSON.parse(storedUser);
+            window.currentUser = currentUser; // Set global currentUser
             console.log('Loaded stored user:', currentUser);
             updateUIForAuthState(currentUser);
             
@@ -175,6 +179,7 @@ async function signOut() {
     }
     
     currentUser = null;
+    window.currentUser = null; // Clear global currentUser
     saveUserToStorage(null);
     updateUIForAuthState(null);
     // Redirect to home page
@@ -519,7 +524,8 @@ function updateUIForAuthState(user) {
         // Update navigation menu for authenticated users
         if (navMenu) {
             navMenu.innerHTML = `
-                <a href="../Html/Lessons.html" class="nav-link">Lessons</a>
+
+            <a href="../Html/Lessons.html" class="nav-link">Lessons</a>
                 <a href="../Html/leaderboard.html" class="nav-link">Leaderboard</a>
                 <a href="../Html/Profile.html" class="nav-link">Profile</a>
                 <a href="#" class="nav-link sign-out-btn" onclick="signOut(); closeMenu();">Sign Out</a>
@@ -730,6 +736,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                   if (data && data.user) {
                       console.log('Found user in data.user:', data.user);
                       currentUser = data.user;
+                      window.currentUser = data.user; // Set global currentUser
                       saveUserToStorage(data.user);
                       updateUIForAuthState(data.user);
                   } else {
@@ -818,6 +825,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                       console.log('Found user in signup data.user:', data.user);
                       user = data.user;
                       currentUser = data.user;
+                      window.currentUser = data.user; // Set global currentUser
                       saveUserToStorage(data.user);
                       updateUIForAuthState(data.user);
                   } else {
