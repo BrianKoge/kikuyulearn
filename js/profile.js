@@ -3,6 +3,31 @@ console.log('Profile.js loaded successfully!');
 
 // Global variables
 let currentUserProfile = null;
+let initializationComplete = false;
+
+// Check if user is authenticated
+function isUserAuthenticated() {
+    // Check multiple sources for user authentication
+    if (window.currentUser && window.currentUser.id) {
+        return true;
+    }
+    
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.id) {
+        return true;
+    }
+    
+    const storedUser = localStorage.getItem('kikuyulearn_user');
+    if (storedUser) {
+        try {
+            const parsedUser = JSON.parse(storedUser);
+            return parsedUser && parsedUser.id;
+        } catch (e) {
+            console.error('Error parsing stored user:', e);
+        }
+    }
+    
+    return false;
+}
 
 // Initialize profile page
 async function initializeProfilePage() {
@@ -10,14 +35,62 @@ async function initializeProfilePage() {
         console.log('Initializing profile page...');
         
         try {
-            // Wait for currentUser to be loaded (max 3 seconds)
+            // Check if user is authenticated
+            if (!isUserAuthenticated()) {
+                console.log('User not authenticated, redirecting to login...');
+                showErrorMessage('Please log in to view your profile');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
+                return;
+            }
+            
+            // Show loading state
+            showLoadingState();
+            
+            // Wait for currentUser to be loaded with longer timeout for online deployments
             let attempts = 0;
-            while (!window.currentUser && attempts < 30) {
+            const maxAttempts = 100; // 10 seconds for online deployments
+            
+            while (!window.currentUser && attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
+                
+                // Also check if user data is available in localStorage
+                const storedUser = localStorage.getItem('kikuyulearn_user');
+                if (storedUser && !window.currentUser) {
+                    try {
+                        const parsedUser = JSON.parse(storedUser);
+                        if (parsedUser && parsedUser.id) {
+                            window.currentUser = parsedUser;
+                            console.log('Loaded user from localStorage:', parsedUser);
+                            break;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing stored user:', e);
+                    }
+                }
             }
             
             console.log('Current user after waiting:', window.currentUser);
+            console.log('Attempts made:', attempts);
+            
+            // If still no user, try to get from Supabase auth session
+            if (!window.currentUser) {
+                console.log('No user found in window.currentUser, trying Supabase auth session...');
+                try {
+                    const supabaseClient = initializeSupabase();
+                    if (supabaseClient) {
+                        const { data: { user }, error } = await supabaseClient.auth.getUser();
+                        if (user && !error) {
+                            window.currentUser = user;
+                            console.log('Loaded user from Supabase auth session:', user);
+                        }
+                    }
+                } catch (authError) {
+                    console.error('Error getting user from Supabase auth:', authError);
+                }
+            }
             
             // Load user profile data
             await loadUserProfile();
@@ -27,6 +100,9 @@ async function initializeProfilePage() {
             
             // Load user statistics
             await loadUserStatistics();
+            
+            // Hide loading state and show profile
+            hideLoadingState();
             
             // Force multiple updates to ensure data is displayed
             setTimeout(() => {
@@ -41,35 +117,83 @@ async function initializeProfilePage() {
                 updateProfileDisplay();
             }, 1000);
             
+            initializationComplete = true;
+            
         } catch (error) {
             console.error('Error initializing profile page:', error);
-            showErrorMessage('Failed to load profile data');
+            hideLoadingState();
+            showErrorMessage('Failed to load profile data. Retrying...');
+            
+            // Retry after 2 seconds
+            setTimeout(() => {
+                if (!initializationComplete) {
+                    console.log('Retrying profile initialization...');
+                    initializeProfilePage();
+                }
+            }, 2000);
         }
+    }
+}
+
+// Show loading state
+function showLoadingState() {
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const displayNameInput = document.getElementById('displayName');
+    const emailInput = document.getElementById('email');
+    const loadingIndicator = document.getElementById('profileLoadingIndicator');
+    
+    if (profileName) profileName.textContent = 'Loading...';
+    if (profileEmail) profileEmail.textContent = 'Loading...';
+    if (displayNameInput) displayNameInput.value = 'Loading...';
+    if (emailInput) emailInput.value = 'Loading...';
+    
+    if (loadingIndicator) {
+        loadingIndicator.classList.remove('hidden');
+    }
+}
+
+// Hide loading state
+function hideLoadingState() {
+    const loadingIndicator = document.getElementById('profileLoadingIndicator');
+    if (loadingIndicator) {
+        loadingIndicator.classList.add('hidden');
     }
 }
 
 // Load user profile from Supabase
 async function loadUserProfile() {
     try {
-        // Try to get authenticated user from localStorage or global variable first
+        // Try to get authenticated user from multiple sources
         let supabaseUser = null;
         
-        // Try to get from global currentUser first
-        if (window.currentUser) {
+        // Priority 1: Global currentUser
+        if (window.currentUser && window.currentUser.id) {
             supabaseUser = window.currentUser;
-        } else if (typeof currentUser !== 'undefined' && currentUser) {
+            console.log('Using window.currentUser:', supabaseUser);
+        }
+        // Priority 2: Local currentUser variable
+        else if (typeof currentUser !== 'undefined' && currentUser && currentUser.id) {
             supabaseUser = currentUser;
-        } else {
-            // Try to get from localStorage
+            console.log('Using local currentUser:', supabaseUser);
+        }
+        // Priority 3: localStorage
+        else {
             const storedUser = localStorage.getItem('kikuyulearn_user');
             if (storedUser) {
-                supabaseUser = JSON.parse(storedUser);
+                try {
+                    supabaseUser = JSON.parse(storedUser);
+                    console.log('Using stored user from localStorage:', supabaseUser);
+                } catch (e) {
+                    console.error('Error parsing stored user:', e);
+                }
             }
         }
         
         if (supabaseUser && supabaseUser.id) {
             // User is authenticated, get profile from Supabase
             try {
+                console.log('Attempting to load profile from Supabase for user:', supabaseUser.id);
                 const userProfile = await UserProgressManager.getUserProfile(supabaseUser.id);
                 
                 if (userProfile) {
@@ -82,7 +206,9 @@ async function loadUserProfile() {
                         created_at: userProfile.created_at,
                         updated_at: userProfile.updated_at
                     };
+                    console.log('Profile loaded from Supabase:', currentUserProfile);
                 } else {
+                    console.log('No profile found in Supabase, creating new profile...');
                     // Create profile if it doesn't exist
                     currentUserProfile = {
                         id: supabaseUser.id,
@@ -98,7 +224,7 @@ async function loadUserProfile() {
                     await createUserProfile(currentUserProfile);
                 }
                 
-                console.log('User profile loaded from Supabase:', currentUserProfile);
+                console.log('User profile loaded successfully:', currentUserProfile);
                 
             } catch (error) {
                 console.error('Failed to load profile from Supabase:', error);
@@ -112,8 +238,10 @@ async function loadUserProfile() {
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 };
+                console.log('Using fallback profile data:', currentUserProfile);
             }
         } else {
+            console.log('No authenticated user found, loading from localStorage...');
             // No authenticated user, load from localStorage
             loadFromLocalStorage();
         }
@@ -130,6 +258,8 @@ async function createUserProfile(profile) {
         if (!supabaseClient) {
             throw new Error('Supabase client not initialized');
         }
+        
+        console.log('Creating user profile in Supabase:', profile);
         
         const { data, error } = await supabaseClient
             .from('profiles')
@@ -160,26 +290,40 @@ async function createUserProfile(profile) {
 function loadFromLocalStorage() {
     const savedProfile = localStorage.getItem('userProfile');
     if (savedProfile) {
-        currentUserProfile = JSON.parse(savedProfile);
+        try {
+            currentUserProfile = JSON.parse(savedProfile);
+            console.log('Profile loaded from localStorage:', currentUserProfile);
+        } catch (e) {
+            console.error('Error parsing stored profile:', e);
+            createDemoProfile();
+        }
     } else {
-        // Create demo profile
-        currentUserProfile = {
-            id: 'demo_user_' + Date.now(),
-            email: 'demo@kikuyulearn.com',
-            full_name: 'Demo User',
-            points: 0,
-            avatar_url: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
+        createDemoProfile();
     }
+}
+
+// Create demo profile
+function createDemoProfile() {
+    currentUserProfile = {
+        id: 'demo_user_' + Date.now(),
+        email: 'demo@kikuyulearn.com',
+        full_name: 'Demo User',
+        points: 0,
+        avatar_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    };
+    console.log('Created demo profile:', currentUserProfile);
 }
 
 // Update profile display
 function updateProfileDisplay() {
     // Use currentUserProfile if available, otherwise fall back to window.currentUser
     const userData = currentUserProfile || window.currentUser;
-    if (!userData) return;
+    if (!userData) {
+        console.log('No user data available for profile display');
+        return;
+    }
     
     console.log('Updating profile display with user data:', userData);
     
@@ -306,6 +450,12 @@ function getCurrentStreak() {
 function editProfile() {
     console.log('editProfile function called');
     
+    if (!currentUserProfile) {
+        console.error('No currentUserProfile found');
+        showErrorMessage('No user profile found. Please refresh the page and try again.');
+        return;
+    }
+    
     // Enable form inputs
     const inputs = document.querySelectorAll('.settings-form input, .settings-form select');
     inputs.forEach(input => {
@@ -337,7 +487,7 @@ async function saveProfileChanges() {
         
         if (!currentUserProfile) {
             console.error('No currentUserProfile found');
-            showErrorMessage('No user profile found');
+            showErrorMessage('No user profile found. Please refresh the page and try again.');
             return;
         }
         
@@ -412,13 +562,39 @@ async function saveProfileChanges() {
     }
 }
 
+// Force refresh user data from Supabase
+async function forceRefreshUserData() {
+    console.log('Force refreshing user data...');
+    try {
+        // Clear current profile
+        currentUserProfile = null;
+        initializationComplete = false;
+        
+        // Re-initialize
+        await initializeProfilePage();
+    } catch (error) {
+        console.error('Error force refreshing user data:', error);
+        showErrorMessage('Failed to refresh user data');
+    }
+}
+
 // Make functions globally accessible
 window.initializeProfilePage = initializeProfilePage;
 window.editProfile = editProfile;
 window.saveProfileChanges = saveProfileChanges;
+window.forceRefreshUserData = forceRefreshUserData;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Profile.js: DOM Content Loaded');
     initializeProfilePage();
+});
+
+// Also try to initialize when window loads (for cases where DOMContentLoaded fires too early)
+window.addEventListener('load', function() {
+    console.log('Profile.js: Window loaded');
+    if (!initializationComplete) {
+        console.log('Re-initializing profile page from window load event');
+        initializeProfilePage();
+    }
 });

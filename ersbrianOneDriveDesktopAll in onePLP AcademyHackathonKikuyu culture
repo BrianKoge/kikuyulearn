@@ -1,0 +1,5 @@
+[33m2cef31a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Fix profile functionality: Display actual user data instead of hardcoded values
+[33m0a376ed[m[33m ([m[1;31morigin/main[m[33m)[m Fix profile page user display and learning progress issues - Update profile.js to use window.currentUser for user data display - Fix profile page to show actual user name and email instead of placeholders - Add wait mechanism for user data loading in profile initialization - Update cache-busting parameters for all JavaScript files - Ensure proper synchronization between authentication and profile display
+[33m1537897[m Fix sign-out button visibility and flash effect - Remove nav-buttons div from all HTML files - Update sign-out button to use nav-link class in Lessons.html - Add desktop navigation styling in CSS - Fix updateUIForAuthState to include sign-out button - Add cache-busting parameters to prevent flash effects
+[33me696f0c[m Fix sign out button visibility in mobile hamburger menu
+[33mee88477[m Add sign out button to hamburger menu for mobile screens
