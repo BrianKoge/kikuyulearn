@@ -95,6 +95,8 @@ async function initializeProfilePage() {
             // Load user profile data
             await loadUserProfile();
             
+            console.log('After loadUserProfile - currentUserProfile:', currentUserProfile);
+            
             // Update profile display
             updateProfileDisplay();
             
@@ -210,10 +212,12 @@ async function loadUserProfile() {
                 } else {
                     console.log('No profile found in Supabase, creating new profile...');
                     // Create profile if it doesn't exist
+                    const displayName = supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
+                    
                     currentUserProfile = {
                         id: supabaseUser.id,
                         email: supabaseUser.email,
-                        full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+                        full_name: displayName,
                         points: 0,
                         avatar_url: null,
                         created_at: new Date().toISOString(),
@@ -229,10 +233,12 @@ async function loadUserProfile() {
             } catch (error) {
                 console.error('Failed to load profile from Supabase:', error);
                 // Use the authenticated user data as fallback
+                const displayName = supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
+                
                 currentUserProfile = {
                     id: supabaseUser.id,
                     email: supabaseUser.email,
-                    full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+                    full_name: displayName,
                     points: 0,
                     avatar_url: null,
                     created_at: new Date().toISOString(),
@@ -327,35 +333,67 @@ function updateProfileDisplay() {
     
     console.log('Updating profile display with user data:', userData);
     
+    // Extract user information from different possible structures
+    let displayName = '';
+    let userEmail = '';
+    
+    if (userData.full_name) {
+        displayName = userData.full_name;
+    } else if (userData.user_metadata && userData.user_metadata.full_name) {
+        displayName = userData.user_metadata.full_name;
+    } else if (userData.email) {
+        displayName = userData.email.split('@')[0];
+    } else {
+        displayName = 'User';
+    }
+    
+    if (userData.email) {
+        userEmail = userData.email;
+    } else {
+        userEmail = 'user@example.com';
+    }
+    
+    console.log('Extracted display name:', displayName, 'and email:', userEmail);
+    
     // Update profile header
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
     
+    console.log('DOM elements found:', { profileAvatar, profileName, profileEmail });
+    
     if (profileAvatar) {
-        const displayName = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
         profileAvatar.textContent = displayName.charAt(0).toUpperCase();
+        console.log('Updated profileAvatar with:', displayName.charAt(0).toUpperCase());
     }
     
     if (profileName) {
-        profileName.textContent = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
+        profileName.textContent = displayName;
+        console.log('Updated profileName with:', displayName);
     }
     
     if (profileEmail) {
-        profileEmail.textContent = userData.email || 'user@example.com';
+        profileEmail.textContent = userEmail;
+        console.log('Updated profileEmail with:', userEmail);
     }
     
     // Update form fields
     const displayNameInput = document.getElementById('displayName');
     const emailInput = document.getElementById('email');
     
+    console.log('Form elements found:', { displayNameInput, emailInput });
+    
     if (displayNameInput) {
-        displayNameInput.value = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
+        displayNameInput.value = displayName;
+        console.log('Updated displayNameInput with:', displayName);
     }
     
     if (emailInput) {
-        emailInput.value = userData.email || 'user@example.com';
+        emailInput.value = userEmail;
+        console.log('Updated emailInput with:', userEmail);
     }
+    
+    console.log('Profile display updated with:', { displayName, userEmail });
 }
 
 // Load user statistics
@@ -578,11 +616,45 @@ async function forceRefreshUserData() {
     }
 }
 
+// Debug function to show current user data
+function debugUserData() {
+    console.log('=== DEBUG USER DATA ===');
+    console.log('window.currentUser:', window.currentUser);
+    console.log('currentUserProfile:', currentUserProfile);
+    console.log('localStorage kikuyulearn_user:', localStorage.getItem('kikuyulearn_user'));
+    console.log('localStorage userProfile:', localStorage.getItem('userProfile'));
+    
+    // Show debug info on page
+    const debugInfo = `
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; font-size: 12px;">
+            <h4>Debug Information:</h4>
+            <p><strong>window.currentUser:</strong> ${JSON.stringify(window.currentUser, null, 2)}</p>
+            <p><strong>currentUserProfile:</strong> ${JSON.stringify(currentUserProfile, null, 2)}</p>
+            <p><strong>localStorage user:</strong> ${localStorage.getItem('kikuyulearn_user')}</p>
+        </div>
+    `;
+    
+    // Insert debug info after the profile header
+    const profileHeader = document.querySelector('.profile-header');
+    if (profileHeader) {
+        const existingDebug = document.querySelector('.debug-info');
+        if (existingDebug) {
+            existingDebug.remove();
+        }
+        
+        const debugDiv = document.createElement('div');
+        debugDiv.className = 'debug-info';
+        debugDiv.innerHTML = debugInfo;
+        profileHeader.appendChild(debugDiv);
+    }
+}
+
 // Make functions globally accessible
 window.initializeProfilePage = initializeProfilePage;
 window.editProfile = editProfile;
 window.saveProfileChanges = saveProfileChanges;
 window.forceRefreshUserData = forceRefreshUserData;
+window.debugUserData = debugUserData;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
