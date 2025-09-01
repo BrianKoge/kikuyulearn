@@ -159,11 +159,11 @@ function updateUIForAuthState(user) {
         
         if (heroButtons) {
             heroButtons.innerHTML = `
-                <button class="btn btn-primary btn-large" onclick="window.location.href='Lessons.html'">
+                <button class="btn btn-primary btn-large" onclick="window.location.href='Html/Lessons.html'">
                     <i class="fas fa-play"></i>
                     Continue Learning
                 </button>
-                <button class="btn btn-outline btn-large" onclick="window.location.href='Profile.html'">
+                <button class="btn btn-outline btn-large" onclick="window.location.href='Html/Profile.html'">
                     <i class="fas fa-user"></i>
                     My Profile
                 </button>

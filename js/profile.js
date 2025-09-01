@@ -6,7 +6,7 @@ let currentUserProfile = null;
 
 // Initialize profile page
 async function initializeProfilePage() {
-    if (window.location.pathname.includes('Profile.html')) {
+    if (window.location.pathname.includes('Html/Profile.html')) {
         console.log('Initializing profile page...');
         
         try {

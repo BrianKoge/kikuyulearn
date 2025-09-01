@@ -41,7 +41,7 @@ async function waitForSupabase() {
 
 // Initialize leaderboard page
 async function initializeLeaderboardPage() {
-    if (window.location.pathname.includes('leaderboard.html')) {
+    if (window.location.pathname.includes('Html/leaderboard.html')) {
         console.log('Initializing leaderboard page...');
         
         try {

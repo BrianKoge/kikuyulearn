@@ -650,7 +650,7 @@ function shouldLessonBeLocked(lessonId) {
 // Initialize lessons page
 async function initializeLessonsPage() {
     // Check if we're on the lessons page
-    if (window.location.pathname.includes('Lessons.html')) {
+    if (window.location.pathname.includes('Html/Lessons.html')) {
         console.log('Initializing lessons page...');
         
         // Load user progress from Supabase/localStorage
