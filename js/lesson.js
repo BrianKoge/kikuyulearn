@@ -538,6 +538,9 @@ async function completeLesson(lessonId) {
         // Update user progress stats
         updateUserProgressStats();
         
+        // Recalculate points to ensure accuracy after lesson completion
+        recalculateUserPoints();
+        
         // Auto-sync immediately after lesson completion
         if (window.currentUser && window.currentUser.id && !window.currentUser.id.startsWith('demo_user_')) {
             setTimeout(async () => {
@@ -674,20 +677,26 @@ async function initializeLessonsPage() {
         // Update user progress stats
         updateUserProgressStats();
         
+        // Recalculate points to ensure accuracy
+        recalculateUserPoints();
+        
         // Force multiple refreshes to ensure data is properly synced
         setTimeout(() => {
             updateUserProgressStats();
             updateLessonCards();
+            recalculateUserPoints();
         }, 100);
         
         setTimeout(() => {
             updateUserProgressStats();
             updateLessonCards();
+            recalculateUserPoints();
         }, 500);
         
         setTimeout(() => {
             updateUserProgressStats();
             updateLessonCards();
+            recalculateUserPoints();
         }, 1000);
         
         // Set up automatic syncing every 30 seconds
@@ -734,28 +743,8 @@ function updateUserProgressStats() {
     
     // If still 0, calculate points from completed lessons
     if (userPoints === 0) {
-        const lessonData = {
-            'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
-            'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
-            'conv-1': 22, 'conv-2': 28
-        };
-        
-        lessonIds.forEach(lessonId => {
-            const progress = localStorage.getItem(`lesson-${lessonId}-progress`) || 0;
-            if (parseInt(progress) >= 100) {
-                userPoints += lessonData[lessonId] || 0;
-            }
-        });
-        
-        // Update currentUser points if it was 0
-        if (window.currentUser && (!window.currentUser.points || window.currentUser.points === 0)) {
-            window.currentUser.points = userPoints;
-            // Save updated points to localStorage
-            localStorage.setItem('userProgress', JSON.stringify({
-                points: window.currentUser.points,
-                completedLessons: window.currentUser.completedLessons || []
-            }));
-        }
+        console.log('Calculating points from completed lessons...');
+        userPoints = recalculateUserPoints();
     }
     
     console.log('Updating progress stats:', {
@@ -1118,6 +1107,79 @@ function stopAutoSync() {
     }
 }
 
+// Recalculate points from completed lessons to ensure accuracy
+function recalculateUserPoints() {
+    const lessonData = {
+        'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+        'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+        'conv-1': 22, 'conv-2': 28
+    };
+    
+    let calculatedPoints = 0;
+    const lessonIds = ['vocab-1', 'vocab-2', 'vocab-3', 'vocab-4', 'grammar-1', 'grammar-2', 'culture-1', 'culture-2', 'conv-1', 'conv-2'];
+    
+    lessonIds.forEach(lessonId => {
+        const progress = parseInt(localStorage.getItem(`lesson-${lessonId}-progress`) || '0');
+        if (progress >= 100) {
+            calculatedPoints += lessonData[lessonId] || 0;
+            console.log(`Lesson ${lessonId} completed: +${lessonData[lessonId]} points`);
+        }
+    });
+    
+    console.log(`Total calculated points: ${calculatedPoints}`);
+    
+    // Update currentUser points if they don't match
+    if (window.currentUser && window.currentUser.points !== calculatedPoints) {
+        console.log(`Updating points from ${window.currentUser.points} to ${calculatedPoints}`);
+        window.currentUser.points = calculatedPoints;
+        
+        // Update localStorage
+        localStorage.setItem('userProgress', JSON.stringify({
+            points: window.currentUser.points,
+            completedLessons: window.currentUser.completedLessons || []
+        }));
+        
+        // Update Supabase if authenticated
+        if (window.currentUser.id && !window.currentUser.id.startsWith('demo_user_') && typeof UserProgressManager !== 'undefined') {
+            UserProgressManager.updateUserPoints(window.currentUser.id, calculatedPoints).then(() => {
+                console.log('Points updated in Supabase');
+            }).catch(error => {
+                console.error('Failed to update points in Supabase:', error);
+            });
+        }
+        
+        // Update the display immediately
+        updateUserProgressStats();
+    }
+    
+    return calculatedPoints;
+}
+
+// Manually refresh progress from Supabase
+async function refreshProgressFromSupabase() {
+    console.log('Manually refreshing progress from Supabase...');
+    try {
+        // Reload user progress
+        await loadUserProgress();
+        
+        // Force sync with Supabase
+        await syncWithSupabase();
+        
+        // Recalculate points to ensure accuracy
+        recalculateUserPoints();
+        
+        // Update displays
+        updateLessonCards();
+        updateUserProgressStats();
+        
+        console.log('Progress refresh completed successfully');
+        showSuccessMessage('Progress refreshed successfully!');
+    } catch (error) {
+        console.error('Error refreshing progress:', error);
+        showErrorMessage('Failed to refresh progress. Please try again.');
+    }
+}
+
 // Make lesson functions globally accessible
 window.showCategoryLessons = showCategoryLessons;
 window.startLesson = startLesson;
@@ -1129,6 +1191,8 @@ window.completeLesson = completeLesson;
 window.initializeLessonsPage = initializeLessonsPage;
 window.syncWithSupabase = syncWithSupabase;
 window.debugProgress = debugProgress;
+window.refreshProgressFromSupabase = refreshProgressFromSupabase;
+window.recalculateUserPoints = recalculateUserPoints;
 
 // Initialize lessons page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
