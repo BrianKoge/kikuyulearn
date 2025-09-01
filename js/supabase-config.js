@@ -99,7 +99,7 @@ class UserProgressManager {
             const { data, error } = await supabaseClient
                 .from('profiles')
                 .update({
-                    points: points,
+                    total_score: points,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', userId);
@@ -163,9 +163,11 @@ class UserProgressManager {
                     const defaultProfile = {
                         id: userId,
                         email: userEmail,
-                        full_name: userName
-                        // Note: points, lessons_completed, current_streak will use DEFAULT values
-                        // avatar_url, created_at, updated_at will use DEFAULT values
+                        full_name: userName,
+                        total_score: 0,
+                        lessons_completed: 0,
+                        current_streak: 0
+                        // Note: avatar_url, created_at, updated_at will use DEFAULT values
                     };
                     
                     const { data: newProfile, error: createError } = await supabaseClient

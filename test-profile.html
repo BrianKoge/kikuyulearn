@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Test - Kikuyulearn</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .info { background-color: #d1ecf1; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Profile Functionality Test</h1>
+    
+    <div class="test-section info">
+        <h3>Current User Status</h3>
+        <div id="userStatus">Loading...</div>
+        <button class="btn-primary" onclick="checkUserStatus()">Check User Status</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Profile Data</h3>
+        <div id="profileData">Loading...</div>
+        <button class="btn-primary" onclick="loadProfileData()">Load Profile Data</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Profile Update</h3>
+        <input type="text" id="testName" placeholder="Enter test name" value="Test User">
+        <input type="email" id="testEmail" placeholder="Enter test email" value="test@example.com">
+        <button class="btn-success" onclick="testProfileUpdate()">Test Profile Update</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="testResults"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/script-simple.js"></script>
+    <script src="js/profile.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+        }
+        
+        async function checkUserStatus() {
+            const statusDiv = document.getElementById('userStatus');
+            try {
+                const storedUser = localStorage.getItem('kikuyulearn_user');
+                const currentUser = window.currentUser;
+                
+                let status = '<h4>User Information:</h4>';
+                status += `<p><strong>Stored User:</strong> ${storedUser ? 'Yes' : 'No'}</p>`;
+                status += `<p><strong>Current User:</strong> ${currentUser ? 'Yes' : 'No'}</p>`;
+                
+                if (currentUser) {
+                    status += `<p><strong>User ID:</strong> ${currentUser.id}</p>`;
+                    status += `<p><strong>Email:</strong> ${currentUser.email}</p>`;
+                    status += `<p><strong>Full Name:</strong> ${currentUser.full_name || 'Not set'}</p>`;
+                    status += `<p><strong>Points:</strong> ${currentUser.points || 0}</p>`;
+                }
+                
+                statusDiv.innerHTML = status;
+                log('User status checked successfully', 'success');
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                log(`Error checking user status: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadProfileData() {
+            const dataDiv = document.getElementById('profileData');
+            try {
+                if (!window.currentUser) {
+                    dataDiv.innerHTML = '<p class="error">No authenticated user found</p>';
+                    log('No authenticated user found', 'error');
+                    return;
+                }
+                
+                const userProfile = await UserProgressManager.getUserProfile(window.currentUser.id);
+                let profileInfo = '<h4>Profile Data from Supabase:</h4>';
+                
+                if (userProfile) {
+                    profileInfo += `<p><strong>ID:</strong> ${userProfile.id}</p>`;
+                    profileInfo += `<p><strong>Email:</strong> ${userProfile.email}</p>`;
+                    profileInfo += `<p><strong>Full Name:</strong> ${userProfile.full_name}</p>`;
+                    profileInfo += `<p><strong>Total Score:</strong> ${userProfile.total_score}</p>`;
+                    profileInfo += `<p><strong>Lessons Completed:</strong> ${userProfile.lessons_completed}</p>`;
+                    profileInfo += `<p><strong>Current Streak:</strong> ${userProfile.current_streak}</p>`;
+                    profileInfo += `<p><strong>Created At:</strong> ${userProfile.created_at}</p>`;
+                    profileInfo += `<p><strong>Updated At:</strong> ${userProfile.updated_at}</p>`;
+                } else {
+                    profileInfo += '<p class="error">No profile found in database</p>';
+                }
+                
+                dataDiv.innerHTML = profileInfo;
+                log('Profile data loaded successfully', 'success');
+            } catch (error) {
+                dataDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                log(`Error loading profile data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProfileUpdate() {
+            try {
+                const testName = document.getElementById('testName').value;
+                const testEmail = document.getElementById('testEmail').value;
+                
+                if (!window.currentUser) {
+                    log('No authenticated user found for profile update test', 'error');
+                    return;
+                }
+                
+                log(`Testing profile update with name: ${testName}, email: ${testEmail}`, 'info');
+                
+                const supabaseClient = initializeSupabase();
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .update({
+                        full_name: testName,
+                        email: testEmail,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', window.currentUser.id);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                log('Profile update test successful', 'success');
+                
+                // Reload profile data to show the update
+                setTimeout(() => {
+                    loadProfileData();
+                }, 1000);
+                
+            } catch (error) {
+                log(`Profile update test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize test page
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Test page loaded', 'info');
+            setTimeout(() => {
+                checkUserStatus();
+                loadProfileData();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

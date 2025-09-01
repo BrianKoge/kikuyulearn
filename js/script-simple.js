@@ -200,7 +200,7 @@ async function createUserProfile(profile) {
                 id: profile.id,
                 email: profile.email,
                 full_name: profile.full_name,
-                points: profile.points,
+                total_score: profile.points,
                 avatar_url: profile.avatar_url,
                 created_at: profile.created_at,
                 updated_at: profile.updated_at
@@ -732,18 +732,36 @@ document.addEventListener('DOMContentLoaded', async function() {
                  console.log('Data type:', typeof data);
                  console.log('Data keys:', data ? Object.keys(data) : 'null');
                  
-                                   // The user object is directly in data.user (not data.session.user)
-                  if (data && data.user) {
-                      console.log('Found user in data.user:', data.user);
-                      currentUser = data.user;
-                      window.currentUser = data.user; // Set global currentUser
-                      saveUserToStorage(data.user);
-                      updateUIForAuthState(data.user);
-                  } else {
-                      console.error('Auth response data:', data);
-                      console.error('No user found in response');
-                      throw new Error('Invalid authentication response');
-                  }
+                 // The user object is directly in data.user (not data.session.user)
+                 if (data && data.user) {
+                     console.log('Found user in data.user:', data.user);
+                     currentUser = data.user;
+                     window.currentUser = data.user; // Set global currentUser
+                     saveUserToStorage(data.user);
+                     updateUIForAuthState(data.user);
+                     
+                     // Load user profile from Supabase
+                     try {
+                         const userProfile = await UserProgressManager.getUserProfile(data.user.id);
+                         if (userProfile) {
+                                                     // Update currentUser with profile data
+                        currentUser.full_name = userProfile.full_name || data.user.user_metadata?.full_name || data.user.email?.split('@')[0];
+                        currentUser.email = userProfile.email || data.user.email;
+                        currentUser.points = userProfile.total_score || 0;
+                             
+                             // Update localStorage with profile data
+                             saveUserToStorage(currentUser);
+                             console.log('User profile loaded and updated:', currentUser);
+                         }
+                     } catch (profileError) {
+                         console.error('Failed to load user profile:', profileError);
+                         // Continue with auth user data
+                     }
+                 } else {
+                     console.error('Auth response data:', data);
+                     console.error('No user found in response');
+                     throw new Error('Invalid authentication response');
+                 }
                 
                 // Redirect to lessons page after successful login
                 setTimeout(() => {
@@ -820,40 +838,52 @@ document.addEventListener('DOMContentLoaded', async function() {
                  console.log('Signup data keys:', data ? Object.keys(data) : 'null');
                  
                  let user = null;
-                                   // The user object is directly in data.user (not data.session.user)
-                  if (data && data.user) {
-                      console.log('Found user in signup data.user:', data.user);
-                      user = data.user;
-                      currentUser = data.user;
-                      window.currentUser = data.user; // Set global currentUser
-                      saveUserToStorage(data.user);
-                      updateUIForAuthState(data.user);
-                  } else {
-                      console.error('Signup response data:', data);
-                      console.error('No user found in signup response');
-                      throw new Error('Invalid authentication response');
-                  }
+                 // The user object is directly in data.user (not data.session.user)
+                 if (data && data.user) {
+                     console.log('Found user in signup data.user:', data.user);
+                     user = data.user;
+                     currentUser = data.user;
+                     window.currentUser = data.user; // Set global currentUser
+                     
+                     // Update user with full name from signup
+                     currentUser.full_name = name;
+                     currentUser.email = user.email;
+                     
+                     saveUserToStorage(currentUser);
+                     updateUIForAuthState(currentUser);
+                 } else {
+                     console.error('Signup response data:', data);
+                     console.error('No user found in signup response');
+                     throw new Error('Invalid authentication response');
+                 }
                  
                  // Create user profile in Supabase
                  if (user) {
-                    try {
-                                                 const profile = {
+                     try {
+                         const profile = {
                              id: user.id,
                              email: user.email,
                              full_name: name,
-                             points: 0,
+                             total_score: 0,
                              avatar_url: null,
                              created_at: new Date().toISOString(),
                              updated_at: new Date().toISOString()
                          };
-                        
-                        await createUserProfile(profile);
-                        console.log('User profile created in Supabase');
-                    } catch (profileError) {
-                        console.error('Failed to create user profile:', profileError);
-                        // Continue anyway, profile can be created later
-                    }
-                }
+                         
+                         await createUserProfile(profile);
+                         console.log('User profile created in Supabase');
+                         
+                         // Update currentUser with the created profile data
+                         currentUser.full_name = name;
+                         currentUser.email = user.email;
+                         currentUser.points = 0;
+                         saveUserToStorage(currentUser);
+                         
+                     } catch (profileError) {
+                         console.error('Failed to create user profile:', profileError);
+                         // Continue anyway, profile can be created later
+                     }
+                 }
                 
                 // Redirect to lessons page after successful signup
                 setTimeout(() => {

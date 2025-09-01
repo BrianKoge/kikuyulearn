@@ -6,7 +6,7 @@ let currentUserProfile = null;
 
 // Initialize profile page
 async function initializeProfilePage() {
-    if (window.location.pathname.includes('../Html/Profile.html')) {
+    if (window.location.pathname.includes('Profile.html')) {
         console.log('Initializing profile page...');
         
         try {
@@ -67,7 +67,7 @@ async function loadUserProfile() {
             }
         }
         
-        if (supabaseUser) {
+        if (supabaseUser && supabaseUser.id) {
             // User is authenticated, get profile from Supabase
             try {
                 const userProfile = await UserProgressManager.getUserProfile(supabaseUser.id);
@@ -75,9 +75,9 @@ async function loadUserProfile() {
                 if (userProfile) {
                     currentUserProfile = {
                         id: supabaseUser.id,
-                        email: supabaseUser.email,
-                        full_name: userProfile.full_name || supabaseUser.user_metadata?.full_name || 'User',
-                        points: userProfile.points || 0,
+                        email: userProfile.email || supabaseUser.email,
+                        full_name: userProfile.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+                        points: userProfile.total_score || 0,
                         avatar_url: userProfile.avatar_url,
                         created_at: userProfile.created_at,
                         updated_at: userProfile.updated_at
@@ -87,7 +87,7 @@ async function loadUserProfile() {
                     currentUserProfile = {
                         id: supabaseUser.id,
                         email: supabaseUser.email,
-                        full_name: supabaseUser.user_metadata?.full_name || 'User',
+                        full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
                         points: 0,
                         avatar_url: null,
                         created_at: new Date().toISOString(),
@@ -102,7 +102,16 @@ async function loadUserProfile() {
                 
             } catch (error) {
                 console.error('Failed to load profile from Supabase:', error);
-                loadFromLocalStorage();
+                // Use the authenticated user data as fallback
+                currentUserProfile = {
+                    id: supabaseUser.id,
+                    email: supabaseUser.email,
+                    full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+                    points: 0,
+                    avatar_url: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
             }
         } else {
             // No authenticated user, load from localStorage
@@ -128,7 +137,7 @@ async function createUserProfile(profile) {
                 id: profile.id,
                 email: profile.email,
                 full_name: profile.full_name,
-                points: profile.points,
+                total_score: profile.points,
                 avatar_url: profile.avatar_url,
                 created_at: profile.created_at,
                 updated_at: profile.updated_at
@@ -168,8 +177,8 @@ function loadFromLocalStorage() {
 
 // Update profile display
 function updateProfileDisplay() {
-    // Use window.currentUser if available, otherwise fall back to currentUserProfile
-    const userData = window.currentUser || currentUserProfile;
+    // Use currentUserProfile if available, otherwise fall back to window.currentUser
+    const userData = currentUserProfile || window.currentUser;
     if (!userData) return;
     
     console.log('Updating profile display with user data:', userData);
@@ -180,12 +189,12 @@ function updateProfileDisplay() {
     const profileEmail = document.getElementById('profileEmail');
     
     if (profileAvatar) {
-        const displayName = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
+        const displayName = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
         profileAvatar.textContent = displayName.charAt(0).toUpperCase();
     }
     
     if (profileName) {
-        profileName.textContent = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
+        profileName.textContent = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
     }
     
     if (profileEmail) {
@@ -197,7 +206,7 @@ function updateProfileDisplay() {
     const emailInput = document.getElementById('email');
     
     if (displayNameInput) {
-        displayNameInput.value = userData.full_name || userData.user_metadata?.full_name || userData.email || 'User';
+        displayNameInput.value = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
     }
     
     if (emailInput) {
@@ -292,22 +301,6 @@ function getCurrentStreak() {
         return 1;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Edit profile function
 function editProfile() {
