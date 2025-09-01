@@ -288,140 +288,15 @@
             font-weight: 700;
         }
         
-        .profile-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
+        /* Profile actions removed - automatic refresh implemented */
         
-        .edit-profile-btn,
-        .refresh-profile-btn {
-            background: linear-gradient(135deg, var(--primary-orange), #ff8c42);
-            color: var(--white);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
+        /* Button styles removed - automatic refresh implemented */
         
-        .edit-profile-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
+        /* Save profile button styles removed - automatic refresh implemented */
         
-        .edit-profile-btn:hover {
-            background: linear-gradient(135deg, var(--primary-orange-dark), var(--primary-orange));
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
-        }
+        /* Save profile button active state removed */
         
-        .edit-profile-btn:hover::before {
-            left: 100%;
-        }
-        
-        .edit-profile-btn:active {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
-        }
-        
-        .edit-profile-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .edit-profile-btn:disabled:hover {
-            background: #d1d5db;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .edit-profile-btn:disabled::before {
-            display: none;
-        }
-        
-        .refresh-profile-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-        }
-        
-        .refresh-profile-btn:hover {
-            background: linear-gradient(135deg, #229954, #28a745);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-        }
-        
-        .save-profile-btn {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: var(--white);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-top: 1.5rem;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-            position: relative;
-            overflow: hidden;
-            display: none;
-        }
-        
-        .save-profile-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .save-profile-btn:hover {
-            background: linear-gradient(135deg, #229954, #27ae60);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
-        }
-        
-        .save-profile-btn:hover::before {
-            left: 100%;
-        }
-        
-        .save-profile-btn:active {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-        }
-        
-        .save-profile-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .save-profile-btn:disabled:hover {
-            background: #d1d5db;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .save-profile-btn:disabled::before {
-            display: none;
-        }
+        /* Save profile button disabled states removed */
         
         .loading-indicator {
             text-align: center;
@@ -464,17 +339,7 @@
                 grid-template-columns: 1fr;
             }
             
-            .profile-actions {
-                flex-direction: column;
-                align-items: center;
-                gap: 0.75rem;
-            }
-            
-            .edit-profile-btn,
-            .refresh-profile-btn {
-                width: 100%;
-                max-width: 250px;
-            }
+            /* Profile actions responsive styles removed */
         }
         
         @media (max-width: 480px) {
@@ -491,15 +356,7 @@
                 gap: 0.75rem;
             }
             
-            .profile-actions {
-                gap: 0.5rem;
-            }
-            
-            .edit-profile-btn,
-            .refresh-profile-btn {
-                padding: 0.75rem 1.5rem;
-                font-size: 0.9rem;
-            }
+            /* Profile actions responsive styles removed */
         }
     </style>
 </head>
@@ -554,14 +411,7 @@
                     </div>
                 </div>
                 
-                <div class="profile-actions">
-                    <button class="edit-profile-btn" onclick="editProfile()">
-                        <i class="fas fa-edit"></i> Edit Profile
-                    </button>
-                    <button class="refresh-profile-btn" onclick="refreshProfileData()">
-                        <i class="fas fa-sync-alt"></i> Refresh Data
-                    </button>
-                </div>
+                <!-- Profile actions removed - automatic refresh implemented -->
 
             </div>
 
@@ -614,7 +464,7 @@
                             Account Settings
                         </h2>
                         
-                        <form class="settings-form" id="profileForm" onsubmit="saveProfileChanges(); return false;">
+                        <form class="settings-form" id="profileForm">
                             <div class="form-group">
                                 <label for="displayName">Display Name</label>
                                 <input type="text" id="displayName" value="" disabled>

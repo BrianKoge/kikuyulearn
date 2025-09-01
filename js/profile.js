@@ -255,6 +255,9 @@ async function initializeProfilePage() {
             // Hide loading state and show profile
             hideLoadingState();
             
+            // Set up automatic refresh system
+            setupAutoRefresh();
+            
             // Force multiple updates to ensure data is displayed
             setTimeout(async () => {
                 await updateProfileDisplay();
@@ -854,121 +857,9 @@ function getCurrentStreak() {
     }
 }
 
-// Edit profile function
-function editProfile() {
-    console.log('editProfile function called');
-    
-    if (!currentUserProfile) {
-        console.error('No currentUserProfile found');
-        showErrorMessage('No user profile found. Please refresh the page and try again.');
-        return;
-    }
-    
-    // Enable form inputs
-    const inputs = document.querySelectorAll('.settings-form input, .settings-form select');
-    inputs.forEach(input => {
-        input.disabled = false;
-    });
-    
-    // Show save button and hide edit button
-    const editBtn = document.getElementById('editProfileBtn');
-    const saveBtn = document.getElementById('saveProfileBtn');
-    
-    if (editBtn) editBtn.style.display = 'none';
-    if (saveBtn) {
-        saveBtn.style.display = 'inline-block';
-        saveBtn.disabled = false;
-    }
-    
-    showSuccessMessage('Profile editing enabled. Make your changes and click "Save Changes".');
-}
+// Profile editing functionality removed - automatic refresh implemented
 
-// Save profile changes
-async function saveProfileChanges() {
-    console.log('saveProfileChanges function called');
-    
-    try {
-        const displayName = document.getElementById('displayName').value;
-        const email = document.getElementById('email').value;
-        
-        console.log('Form values:', { displayName, email });
-        
-        if (!currentUserProfile) {
-            console.error('No currentUserProfile found');
-            showErrorMessage('No user profile found. Please refresh the page and try again.');
-            return;
-        }
-        
-        console.log('Current user profile:', currentUserProfile);
-        
-        // Update local profile
-        currentUserProfile.full_name = displayName;
-        currentUserProfile.email = email;
-        currentUserProfile.updated_at = new Date().toISOString();
-        
-        console.log('Updated profile:', currentUserProfile);
-        
-        // Save to Supabase if authenticated
-        if (!currentUserProfile.id.startsWith('demo_user_')) {
-            console.log('Saving to Supabase for authenticated user');
-            try {
-                const supabaseClient = initializeSupabase();
-                if (!supabaseClient) {
-                    throw new Error('Supabase client not initialized');
-                }
-                
-                const { data, error } = await supabaseClient
-                    .from('profiles')
-                    .update({
-                        full_name: displayName,
-                        email: email,
-                        updated_at: currentUserProfile.updated_at
-                    })
-                    .eq('id', currentUserProfile.id);
-                
-                if (error) {
-                    console.error('Error updating profile:', error);
-                    throw error;
-                }
-                
-                console.log('Profile updated in Supabase:', data);
-            } catch (error) {
-                console.error('Failed to update profile in Supabase:', error);
-                // Continue with localStorage as fallback
-            }
-        } else {
-            console.log('Using localStorage for demo user');
-        }
-        
-        // Save to localStorage
-        localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
-        console.log('Profile saved to localStorage');
-        
-        // Update display
-        updateProfileDisplay();
-        
-        // Disable form inputs and reset button states
-        const inputs = document.querySelectorAll('.settings-form input, .settings-form select');
-        inputs.forEach(input => {
-            input.disabled = true;
-        });
-        
-        const editBtn = document.getElementById('editProfileBtn');
-        const saveBtn = document.getElementById('saveProfileBtn');
-        
-        if (editBtn) editBtn.style.display = 'inline-block';
-        if (saveBtn) {
-            saveBtn.style.display = 'none';
-            saveBtn.disabled = true;
-        }
-        
-        showSuccessMessage('Profile updated successfully!');
-        
-    } catch (error) {
-        console.error('Error saving profile changes:', error);
-        showErrorMessage('Failed to save profile changes');
-    }
-}
+// Profile saving functionality removed - automatic refresh implemented
 
 // Force refresh user data from Supabase
 async function forceRefreshUserData() {
@@ -997,9 +888,9 @@ async function refreshStatistics() {
     }
 }
 
-// Refresh all profile data from database
-async function refreshProfileData() {
-    console.log('=== REFRESHING ALL PROFILE DATA FROM DATABASE ===');
+// Automatic profile data refresh from database
+async function autoRefreshProfileData() {
+    console.log('=== AUTOMATIC PROFILE DATA REFRESH ===');
     try {
         // Refresh profile display with latest database data
         await updateProfileDisplay();
@@ -1007,13 +898,67 @@ async function refreshProfileData() {
         // Refresh statistics with latest lesson data
         await loadUserStatistics();
         
-        console.log('Profile data refreshed successfully from database');
-        showSuccessMessage('Profile data refreshed from database!');
+        console.log('Profile data automatically refreshed from database');
         
     } catch (error) {
-        console.error('Error refreshing profile data:', error);
-        showErrorMessage('Failed to refresh profile data');
+        console.error('Error in automatic profile refresh:', error);
     }
+}
+
+// Set up automatic refresh triggers
+function setupAutoRefresh() {
+    console.log('Setting up automatic profile refresh...');
+    
+    // Refresh when page becomes visible (user returns to tab)
+    document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden) {
+            console.log('Page became visible - auto-refreshing profile...');
+            await autoRefreshProfileData();
+        }
+    });
+    
+    // Refresh when window gains focus (user returns to browser)
+    window.addEventListener('focus', async () => {
+        console.log('Window gained focus - auto-refreshing profile...');
+        await autoRefreshProfileData();
+        // Also refresh when user switches back to the app
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await autoRefreshProfileData();
+    });
+    
+    // Refresh when page is shown from back-forward cache
+    window.addEventListener('pageshow', async (event) => {
+        if (event.persisted) {
+            console.log('Page shown from cache - auto-refreshing profile...');
+            await autoRefreshProfileData();
+        }
+    });
+    
+    // Refresh when page loads (for page refresh)
+    window.addEventListener('load', async () => {
+        console.log('Page loaded - auto-refreshing profile...');
+        await autoRefreshProfileData();
+    });
+    
+    // Refresh when user navigates back to the page
+    window.addEventListener('popstate', async () => {
+        console.log('Navigation detected - auto-refreshing profile...');
+        await autoRefreshProfileData();
+    });
+    
+    // Periodic refresh every 3 minutes (180,000 ms) for more frequent updates
+    setInterval(async () => {
+        console.log('Periodic refresh - updating profile data...');
+        await autoRefreshProfileData();
+    }, 180000);
+    
+    // Additional refresh after 30 seconds to catch any missed updates
+    setTimeout(async () => {
+        console.log('Initial delay refresh - updating profile data...');
+        await autoRefreshProfileData();
+    }, 30000);
+    
+    console.log('Automatic profile refresh setup completed');
 }
 
 // Force create profile from current user data (for debugging)
@@ -1102,13 +1047,10 @@ function debugUserData() {
 
 // Make functions globally accessible
 window.initializeProfilePage = initializeProfilePage;
-window.editProfile = editProfile;
-window.saveProfileChanges = saveProfileChanges;
 window.forceRefreshUserData = forceRefreshUserData;
 window.debugUserData = debugUserData;
 window.forceCreateProfile = forceCreateProfile;
 window.refreshStatistics = refreshStatistics;
-window.refreshProfileData = refreshProfileData;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
