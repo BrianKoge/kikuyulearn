@@ -215,6 +215,8 @@ body {
         box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3) !important;
         display: block !important;
         text-decoration: none !important;
+        width: 80% !important;
+        max-width: 250px !important;
     }
     
     .nav-menu.active .sign-out-btn:hover {
@@ -239,6 +241,13 @@ body {
         background: transparent !important;
         color: var(--primary-orange) !important;
         border: 2px solid var(--primary-orange) !important;
+    }
+    
+    /* Ensure sign out button is visible in mobile menu */
+    .nav-menu.active .sign-out-btn {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
 
