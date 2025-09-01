@@ -288,7 +288,15 @@
             font-weight: 700;
         }
         
-        .edit-profile-btn {
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        
+        .edit-profile-btn,
+        .refresh-profile-btn {
             background: linear-gradient(135deg, var(--primary-orange), #ff8c42);
             color: var(--white);
             border: none;
@@ -298,7 +306,6 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-top: 1.5rem;
             box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
             position: relative;
             overflow: hidden;
@@ -345,6 +352,15 @@
         
         .edit-profile-btn:disabled::before {
             display: none;
+        }
+        
+        .refresh-profile-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .refresh-profile-btn:hover {
+            background: linear-gradient(135deg, #229954, #28a745);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
         }
         
         .save-profile-btn {
@@ -447,6 +463,43 @@
             .profile-content {
                 grid-template-columns: 1fr;
             }
+            
+            .profile-actions {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+            }
+            
+            .edit-profile-btn,
+            .refresh-profile-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .profile-header {
+                padding: 1rem;
+            }
+            
+            .profile-name {
+                font-size: 1.5rem;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .profile-actions {
+                gap: 0.5rem;
+            }
+            
+            .edit-profile-btn,
+            .refresh-profile-btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -501,9 +554,14 @@
                     </div>
                 </div>
                 
-                <button class="edit-profile-btn" onclick="editProfile()">
-                    <i class="fas fa-edit"></i> Edit Profile
-                </button>
+                <div class="profile-actions">
+                    <button class="edit-profile-btn" onclick="editProfile()">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                    <button class="refresh-profile-btn" onclick="refreshProfileData()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
 
             </div>
 

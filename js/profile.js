@@ -73,7 +73,7 @@ async function initializeProfilePage() {
                         currentUserProfile = parsedProfile;
                         console.log('Loaded existing profile from localStorage:', currentUserProfile);
                         // Update display immediately
-                        updateProfileDisplay();
+                        await updateProfileDisplay();
                         // Mark initialization as complete
                         initializationComplete = true;
                         return;
@@ -241,7 +241,7 @@ async function initializeProfilePage() {
             }
             
             // Update profile display
-            updateProfileDisplay();
+            await updateProfileDisplay();
             
             // Ensure profile is saved to localStorage
             if (currentUserProfile) {
@@ -256,16 +256,16 @@ async function initializeProfilePage() {
             hideLoadingState();
             
             // Force multiple updates to ensure data is displayed
-            setTimeout(() => {
-                updateProfileDisplay();
+            setTimeout(async () => {
+                await updateProfileDisplay();
             }, 100);
             
-            setTimeout(() => {
-                updateProfileDisplay();
+            setTimeout(async () => {
+                await updateProfileDisplay();
             }, 500);
             
-            setTimeout(() => {
-                updateProfileDisplay();
+            setTimeout(async () => {
+                await updateProfileDisplay();
             }, 1000);
             
             initializationComplete = true;
@@ -527,147 +527,261 @@ function createDemoProfile() {
     console.log('Created demo profile:', currentUserProfile);
 }
 
-// Update profile display
-function updateProfileDisplay() {
-    // Use currentUserProfile if available, otherwise fall back to window.currentUser
+// Update profile display with database data
+async function updateProfileDisplay() {
+    try {
+        console.log('=== UPDATING PROFILE DISPLAY WITH DATABASE DATA ===');
+        
+        // Use currentUserProfile if available, otherwise fall back to window.currentUser
+        const userData = currentUserProfile || window.currentUser;
+        if (!userData) {
+            console.log('No user data available for profile display');
+            return;
+        }
+        
+        console.log('Updating profile display with user data:', userData);
+        
+        // Extract user information from database first, then fallback to other sources
+        let displayName = '';
+        let userEmail = '';
+        
+        // Priority 1: Try to get data from Supabase database
+        if (typeof UserProgressManager !== 'undefined' && userData.id) {
+            try {
+                console.log('Fetching profile data from Supabase database...');
+                const profileData = await UserProgressManager.getUserProfile(userData.id);
+                console.log('Profile data from Supabase:', profileData);
+                
+                if (profileData) {
+                    // Use database data first
+                    displayName = profileData.full_name || profileData.display_name || '';
+                    userEmail = profileData.email || '';
+                    console.log('Database data - Name:', displayName, 'Email:', userEmail);
+                }
+            } catch (error) {
+                console.log('Failed to fetch from database, using fallback:', error.message);
+            }
+        }
+        
+        // Priority 2: Use user metadata if database data is incomplete
+        if (!displayName && userData.user_metadata && userData.user_metadata.full_name) {
+            displayName = userData.user_metadata.full_name;
+            console.log('Using user_metadata.full_name:', displayName);
+        }
+        
+        // Priority 3: Use direct properties
+        if (!displayName && userData.full_name) {
+            displayName = userData.full_name;
+            console.log('Using userData.full_name:', displayName);
+        }
+        
+        // Priority 4: Fallback to email username
+        if (!displayName && userData.email) {
+            displayName = userData.email.split('@')[0];
+            console.log('Using email username as display name:', displayName);
+        }
+        
+        // Priority 5: Final fallback
+        if (!displayName) {
+            displayName = 'User';
+            console.log('Using final fallback display name:', displayName);
+        }
+        
+        // Get email from database or user data
+        if (!userEmail && userData.email) {
+            userEmail = userData.email;
+            console.log('Using userData.email:', userEmail);
+        }
+        
+        // Final fallback for email
+        if (!userEmail) {
+            userEmail = 'user@example.com';
+            console.log('Using fallback email:', userEmail);
+        }
+        
+        // Trim any whitespace from display name
+        displayName = displayName.trim();
+        
+        console.log('Final extracted data - Name:', displayName, 'Email:', userEmail);
+        
+        // Update profile header
+        const profileAvatar = document.getElementById('profileAvatar');
+        const profileName = document.getElementById('profileName');
+        const profileEmail = document.getElementById('profileEmail');
+        
+        console.log('DOM elements found:', { profileAvatar, profileName, profileEmail });
+        
+        if (profileAvatar) {
+            profileAvatar.textContent = displayName.charAt(0).toUpperCase();
+            console.log('Updated profileAvatar with:', displayName.charAt(0).toUpperCase());
+        }
+        
+        if (profileName) {
+            profileName.textContent = displayName;
+            console.log('Updated profileName with:', displayName);
+        }
+        
+        if (profileEmail) {
+            profileEmail.textContent = userEmail;
+            console.log('Updated profileEmail with:', userEmail);
+        }
+        
+        // Update form fields
+        const displayNameInput = document.getElementById('displayName');
+        const emailInput = document.getElementById('email');
+        
+        console.log('Form elements found:', { displayNameInput, emailInput });
+        
+        if (displayNameInput) {
+            displayNameInput.value = displayName;
+            console.log('Updated displayNameInput with:', displayName);
+        }
+        
+        if (emailInput) {
+            emailInput.value = userEmail;
+            console.log('Updated emailInput with:', userEmail);
+        }
+        
+        console.log('Profile display updated with database data:', { displayName, userEmail });
+        
+    } catch (error) {
+        console.error('Error updating profile display:', error);
+        // Fallback to basic display update
+        updateProfileDisplayFallback();
+    }
+}
+
+// Fallback profile display update
+function updateProfileDisplayFallback() {
+    console.log('Using fallback profile display update...');
     const userData = currentUserProfile || window.currentUser;
-    if (!userData) {
-        console.log('No user data available for profile display');
-        return;
-    }
+    if (!userData) return;
     
-    console.log('Updating profile display with user data:', userData);
+    let displayName = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
+    let userEmail = userData.email || 'user@example.com';
     
-    // Extract user information from different possible structures
-    let displayName = '';
-    let userEmail = '';
-    
-    // Check for full_name in multiple locations
-    if (userData.full_name) {
-        displayName = userData.full_name;
-    } else if (userData.user_metadata && userData.user_metadata.full_name) {
-        displayName = userData.user_metadata.full_name;
-    } else if (userData.email) {
-        displayName = userData.email.split('@')[0];
-    } else {
-        displayName = 'User';
-    }
-    
-    // Check for email
-    if (userData.email) {
-        userEmail = userData.email;
-    } else {
-        userEmail = 'user@example.com';
-    }
-    
-    // Trim any whitespace from display name
     displayName = displayName.trim();
-    
-    console.log('Extracted display name:', displayName, 'and email:', userEmail);
     
     // Update profile header
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
     
-    console.log('DOM elements found:', { profileAvatar, profileName, profileEmail });
-    
-    if (profileAvatar) {
-        profileAvatar.textContent = displayName.charAt(0).toUpperCase();
-        console.log('Updated profileAvatar with:', displayName.charAt(0).toUpperCase());
-    }
-    
-    if (profileName) {
-        profileName.textContent = displayName;
-        console.log('Updated profileName with:', displayName);
-    }
-    
-    if (profileEmail) {
-        profileEmail.textContent = userEmail;
-        console.log('Updated profileEmail with:', userEmail);
-    }
+    if (profileAvatar) profileAvatar.textContent = displayName.charAt(0).toUpperCase();
+    if (profileName) profileName.textContent = displayName;
+    if (profileEmail) profileEmail.textContent = userEmail;
     
     // Update form fields
     const displayNameInput = document.getElementById('displayName');
     const emailInput = document.getElementById('email');
     
-    console.log('Form elements found:', { displayNameInput, emailInput });
-    
-    if (displayNameInput) {
-        displayNameInput.value = displayName;
-        console.log('Updated displayNameInput with:', displayName);
-    }
-    
-    if (emailInput) {
-        emailInput.value = userEmail;
-        console.log('Updated emailInput with:', userEmail);
-    }
-    
-    console.log('Profile display updated with:', { displayName, userEmail });
+    if (displayNameInput) displayNameInput.value = displayName;
+    if (emailInput) emailInput.value = userEmail;
 }
 
-// Load user statistics
+// Load user statistics from real lesson data in database
 async function loadUserStatistics() {
     try {
-        console.log('Loading user statistics...');
+        console.log('=== LOADING USER STATISTICS FROM REAL LESSON DATA ===');
+        
+        if (!currentUserProfile && !window.currentUser) {
+            console.log('No user data available for statistics');
+            return;
+        }
+        
+        const userId = currentUserProfile?.id || window.currentUser?.id;
+        console.log('Loading statistics for user ID:', userId);
+        
         let completedLessons = 0;
         let totalPoints = 0;
         let currentStreak = 0;
         
-        if (currentUserProfile && !currentUserProfile.id.startsWith('demo_user_')) {
-            console.log('Loading statistics from Supabase for user:', currentUserProfile.id);
-            // Get real data from Supabase
+        // Priority 1: Get real data from Supabase database
+        if (typeof UserProgressManager !== 'undefined' && userId) {
             try {
-                // Check if UserProgressManager is available
-                if (typeof UserProgressManager !== 'undefined') {
-                    const progressData = await UserProgressManager.getUserProfile(currentUserProfile.id);
-                    console.log('Profile data from Supabase:', progressData);
-                    
-                    // Get total points from profile
-                    totalPoints = progressData?.total_score || currentUserProfile.points || 0;
-                    console.log('Total points from profile:', totalPoints);
-                    
-                    // Get progress data for completed lessons
-                    const userProgress = await UserProgressManager.getUserProgress(currentUserProfile.id);
-                    console.log('Progress data from Supabase:', userProgress);
-                    
+                console.log('Fetching real lesson progress from Supabase...');
+                
+                // Get user profile data for total points
+                const profileData = await UserProgressManager.getUserProfile(userId);
+                console.log('Profile data from Supabase:', profileData);
+                
+                // Get real lesson progress data
+                const userProgress = await UserProgressManager.getUserProgress(userId);
+                console.log('Real lesson progress data from Supabase:', userProgress);
+                
+                if (userProgress && Array.isArray(userProgress)) {
                     // Count completed lessons (progress >= 100%)
                     completedLessons = userProgress.filter(p => p.progress_percentage >= 100).length;
-                    console.log('Completed lessons count:', completedLessons);
+                    console.log('Completed lessons from real data:', completedLessons);
                     
-                    // Get current streak
-                    currentStreak = getCurrentStreak();
+                    // Calculate total points from completed lessons
+                    const lessonData = {
+                        'vocab-1': 10, 'vocab-2': 15, 'vocab-3': 12, 'vocab-4': 15,
+                        'grammar-1': 20, 'grammar-2': 25, 'culture-1': 25, 'culture-2': 18,
+                        'conv-1': 22, 'conv-2': 28
+                    };
+                    
+                    let calculatedPoints = 0;
+                    userProgress.forEach(progress => {
+                        if (progress.progress_percentage >= 100) {
+                            const lessonPoints = lessonData[progress.lesson_id] || 0;
+                            calculatedPoints += lessonPoints;
+                            console.log(`Lesson ${progress.lesson_id} completed: +${lessonPoints} points`);
+                        }
+                    });
+                    
+                    // Use calculated points from lessons, fallback to profile total_score
+                    totalPoints = calculatedPoints > 0 ? calculatedPoints : (profileData?.total_score || 0);
+                    console.log('Total points calculated from lessons:', totalPoints);
+                    
+                    // Get current streak from database or calculate from login data
+                    currentStreak = await getCurrentStreakFromDatabase(userId) || getCurrentStreak();
                     console.log('Current streak:', currentStreak);
-                } else {
-                    console.log('UserProgressManager not available, using fallback data');
-                    // Use fallback data
-                    completedLessons = 0;
-                    totalPoints = currentUserProfile.points || 0;
-                    currentStreak = getCurrentStreak();
+                    
+                    console.log('=== REAL STATISTICS FROM DATABASE ===');
+                    console.log('Completed Lessons:', completedLessons);
+                    console.log('Total Points:', totalPoints);
+                    console.log('Current Streak:', currentStreak);
+                    
+                    // Update statistics display with real data
+                    updateStatisticsDisplay(completedLessons, totalPoints, currentStreak);
+                    return;
                 }
+                
             } catch (error) {
                 console.error('Failed to load statistics from Supabase:', error);
-                // Use fallback data
-                completedLessons = 0;
-                totalPoints = currentUserProfile.points || 0;
-                currentStreak = getCurrentStreak();
+                console.log('Falling back to localStorage data...');
             }
-        } else {
-            console.log('Using localStorage data for statistics');
-            // Use localStorage data
-            loadStatisticsFromLocalStorage();
-            return; // This function will call updateStatisticsDisplay
         }
         
-        console.log('Final statistics:', { completedLessons, totalPoints, currentStreak });
-        // Update statistics display
-        updateStatisticsDisplay(completedLessons, totalPoints, currentStreak);
+        // Priority 2: Use localStorage data as fallback
+        console.log('Using localStorage data as fallback for statistics');
+        loadStatisticsFromLocalStorage();
         
     } catch (error) {
         console.error('Error loading user statistics:', error);
         // Use localStorage data as final fallback
         loadStatisticsFromLocalStorage();
     }
+}
+
+// Get current streak from database
+async function getCurrentStreakFromDatabase(userId) {
+    try {
+        if (typeof UserProgressManager !== 'undefined' && userId) {
+            // Try to get streak from user profile
+            const profileData = await UserProgressManager.getUserProfile(userId);
+            if (profileData && profileData.current_streak !== undefined) {
+                console.log('Streak from database profile:', profileData.current_streak);
+                return profileData.current_streak;
+            }
+        }
+    } catch (error) {
+        console.log('Failed to get streak from database:', error.message);
+    }
+    
+    // Fallback to localStorage streak calculation
+    return getCurrentStreak();
 }
 
 // Load statistics from localStorage
@@ -883,8 +997,27 @@ async function refreshStatistics() {
     }
 }
 
+// Refresh all profile data from database
+async function refreshProfileData() {
+    console.log('=== REFRESHING ALL PROFILE DATA FROM DATABASE ===');
+    try {
+        // Refresh profile display with latest database data
+        await updateProfileDisplay();
+        
+        // Refresh statistics with latest lesson data
+        await loadUserStatistics();
+        
+        console.log('Profile data refreshed successfully from database');
+        showSuccessMessage('Profile data refreshed from database!');
+        
+    } catch (error) {
+        console.error('Error refreshing profile data:', error);
+        showErrorMessage('Failed to refresh profile data');
+    }
+}
+
 // Force create profile from current user data (for debugging)
-function forceCreateProfile() {
+async function forceCreateProfile() {
     console.log('Force creating profile...');
     console.log('Current state:', { currentUserProfile, windowCurrentUser: window.currentUser });
     
@@ -922,10 +1055,10 @@ function forceCreateProfile() {
         console.log('Profile created and saved:', currentUserProfile);
         
         // Update display
-        updateProfileDisplay();
+        await updateProfileDisplay();
         
         // Load statistics after profile creation
-        loadUserStatistics();
+        await loadUserStatistics();
         
         return currentUserProfile;
     } else {
@@ -975,6 +1108,7 @@ window.forceRefreshUserData = forceRefreshUserData;
 window.debugUserData = debugUserData;
 window.forceCreateProfile = forceCreateProfile;
 window.refreshStatistics = refreshStatistics;
+window.refreshProfileData = refreshProfileData;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
