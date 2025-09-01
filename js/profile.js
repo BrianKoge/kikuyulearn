@@ -826,6 +826,54 @@ async function forceRefreshUserData() {
     }
 }
 
+// Force create profile from current user data (for debugging)
+function forceCreateProfile() {
+    console.log('Force creating profile...');
+    console.log('Current state:', { currentUserProfile, windowCurrentUser: window.currentUser });
+    
+    if (window.currentUser && window.currentUser.id) {
+        const userData = window.currentUser;
+        console.log('User data available:', userData);
+        
+        // Extract full_name from multiple possible locations
+        let displayName = '';
+        if (userData.full_name) {
+            displayName = userData.full_name;
+        } else if (userData.user_metadata && userData.user_metadata.full_name) {
+            displayName = userData.user_metadata.full_name;
+        } else if (userData.email) {
+            displayName = userData.email.split('@')[0];
+        } else {
+            displayName = 'User';
+        }
+        
+        // Trim whitespace
+        displayName = displayName.trim();
+        
+        currentUserProfile = {
+            id: userData.id,
+            email: userData.email,
+            full_name: displayName,
+            points: userData.points || 0,
+            avatar_url: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
+        console.log('Profile created and saved:', currentUserProfile);
+        
+        // Update display
+        updateProfileDisplay();
+        
+        return currentUserProfile;
+    } else {
+        console.log('No user data available for profile creation');
+        return null;
+    }
+}
+
 // Debug function to show current user data
 function debugUserData() {
     console.log('=== DEBUG USER DATA ===');
@@ -865,6 +913,7 @@ window.editProfile = editProfile;
 window.saveProfileChanges = saveProfileChanges;
 window.forceRefreshUserData = forceRefreshUserData;
 window.debugUserData = debugUserData;
+window.forceCreateProfile = forceCreateProfile;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
