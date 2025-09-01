@@ -393,7 +393,7 @@ function updateProfileDisplay(profileData) {
 // Initialize profile page with user data
 function initializeProfilePage() {
     // Check if we're on the profile page
-    if (window.location.pathname.includes('Html/Profile.html')) {
+    if (window.location.pathname.includes('../Html/Profile.html')) {
         // For demo purposes, create a sample user if none exists
         if (!currentUser) {
             currentUser = {
@@ -526,9 +526,9 @@ function updateUIForAuthState(user) {
         // Update navigation menu for authenticated users
         if (navMenu) {
             navMenu.innerHTML = `
-                        <a href="./Lessons.html" class="nav-link">Lessons</a>
-        <a href="./leaderboard.html" class="nav-link">Leaderboard</a>
-        <a href="./Profile.html" class="nav-link">Profile</a>
+                        <a href="../Html/Lessons.html" class="nav-link">Lessons</a>
+        <a href="../Html/leaderboard.html" class="nav-link">Leaderboard</a>
+        <a href="../Html/Profile.html" class="nav-link">Profile</a>
             `;
         }
     } else {
@@ -746,7 +746,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Redirect to lessons page after successful login
                 setTimeout(() => {
-                    window.location.href = './Lessons.html';
+                    window.location.href = '../Html/Lessons.html';
                 }, 1500);
                 
             } catch (error) {
@@ -855,7 +855,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Redirect to lessons page after successful signup
                 setTimeout(() => {
-                    window.location.href = './Lessons.html';
+                    window.location.href = '../Html/Profile.html';
                 }, 1500);
                 
             } catch (error) {
