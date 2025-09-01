@@ -64,6 +64,39 @@ async function initializeProfilePage() {
                         if (parsedUser && parsedUser.id) {
                             window.currentUser = parsedUser;
                             console.log('Loaded user from localStorage:', parsedUser);
+                            
+                            // Create profile immediately when user is loaded
+                            if (!currentUserProfile) {
+                                console.log('Creating profile immediately from localStorage user data...');
+                                const userData = parsedUser;
+                                
+                                // Extract full_name from multiple possible locations
+                                let displayName = '';
+                                if (userData.full_name) {
+                                    displayName = userData.full_name;
+                                } else if (userData.user_metadata && userData.user_metadata.full_name) {
+                                    displayName = userData.user_metadata.full_name;
+                                } else if (userData.email) {
+                                    displayName = userData.email.split('@')[0];
+                                } else {
+                                    displayName = 'User';
+                                }
+                                
+                                // Trim whitespace
+                                displayName = displayName.trim();
+                                
+                                currentUserProfile = {
+                                    id: userData.id,
+                                    email: userData.email,
+                                    full_name: displayName,
+                                    points: userData.points || 0,
+                                    avatar_url: null,
+                                    created_at: new Date().toISOString(),
+                                    updated_at: new Date().toISOString()
+                                };
+                                console.log('Created profile immediately from localStorage user data:', currentUserProfile);
+                            }
+                            
                             break;
                         }
                     } catch (e) {
@@ -85,6 +118,38 @@ async function initializeProfilePage() {
                         if (user && !error) {
                             window.currentUser = user;
                             console.log('Loaded user from Supabase auth session:', user);
+                            
+                            // Create profile immediately when user is loaded from Supabase
+                            if (!currentUserProfile) {
+                                console.log('Creating profile immediately from Supabase auth user data...');
+                                const userData = user;
+                                
+                                // Extract full_name from multiple possible locations
+                                let displayName = '';
+                                if (userData.full_name) {
+                                    displayName = userData.full_name;
+                                } else if (userData.user_metadata && userData.user_metadata.full_name) {
+                                    displayName = userData.user_metadata.full_name;
+                                } else if (userData.email) {
+                                    displayName = userData.email.split('@')[0];
+                                } else {
+                                    displayName = 'User';
+                                }
+                                
+                                // Trim whitespace
+                                displayName = displayName.trim();
+                                
+                                currentUserProfile = {
+                                    id: userData.id,
+                                    email: userData.email,
+                                    full_name: displayName,
+                                    points: userData.points || 0,
+                                    avatar_url: null,
+                                    created_at: new Date().toISOString(),
+                                    updated_at: new Date().toISOString()
+                                };
+                                console.log('Created profile immediately from Supabase auth user data:', currentUserProfile);
+                            }
                         }
                     }
                 } catch (authError) {
@@ -101,10 +166,26 @@ async function initializeProfilePage() {
             if (!currentUserProfile && window.currentUser) {
                 console.log('Profile loading failed, creating profile from current user data...');
                 const userData = window.currentUser;
+                
+                // Extract full_name from multiple possible locations
+                let displayName = '';
+                if (userData.full_name) {
+                    displayName = userData.full_name;
+                } else if (userData.user_metadata && userData.user_metadata.full_name) {
+                    displayName = userData.user_metadata.full_name;
+                } else if (userData.email) {
+                    displayName = userData.email.split('@')[0];
+                } else {
+                    displayName = 'User';
+                }
+                
+                // Trim whitespace
+                displayName = displayName.trim();
+                
                 currentUserProfile = {
                     id: userData.id,
                     email: userData.email,
-                    full_name: userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User',
+                    full_name: displayName,
                     points: userData.points || 0,
                     avatar_url: null,
                     created_at: new Date().toISOString(),
