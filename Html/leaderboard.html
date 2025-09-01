@@ -49,6 +49,20 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.9rem;
             }
+            
+            /* Fix refresh button layout on mobile */
+            .leaderboard-header > div:first-child {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .leaderboard-header .btn {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
         }
         
         @media (max-width: 480px) {
@@ -74,6 +88,22 @@
             .tab-button {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.8rem;
+            }
+            
+            /* Enhanced mobile refresh button layout */
+            .leaderboard-header > div:first-child {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .leaderboard-header .btn {
+                width: 100%;
+                max-width: 180px;
+                margin: 0 auto;
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
             }
         }
         
@@ -127,6 +157,24 @@
         .tab-button:hover {
             background: var(--primary-orange);
             color: var(--white);
+        }
+        
+        /* Refresh button specific styling */
+        .leaderboard-header .btn {
+            transition: all 0.3s ease;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.2);
+        }
+        
+        .leaderboard-header .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
+        }
+        
+        .leaderboard-header .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
         }
         
         .leaderboard-table {
@@ -348,6 +396,35 @@
             .leaderboard-row .streak {
                 font-size: 0.8rem;
             }
+            
+            /* Ultra-small mobile refresh button layout */
+            .leaderboard-header > div:first-child {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .leaderboard-header .btn {
+                width: 100%;
+                max-width: 160px;
+                margin: 0 auto;
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .leaderboard-header {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .leaderboard-title {
+                font-size: 1.5rem;
+            }
+            
+            .leaderboard-subtitle {
+                font-size: 0.9rem;
+            }
         }
         
         /* Touch-friendly improvements for mobile */
@@ -375,6 +452,27 @@
             .leaderboard-list {
                 max-height: 70vh;
                 overflow-y: auto;
+            }
+            
+            /* Enhanced touch-friendly refresh button */
+            .leaderboard-header .btn {
+                min-height: 48px; /* Touch-friendly minimum height */
+                min-width: 120px; /* Touch-friendly minimum width */
+                -webkit-tap-highlight-color: rgba(255, 165, 0, 0.2);
+                touch-action: manipulation;
+                font-size: 0.95rem;
+                letter-spacing: 0.5px;
+            }
+            
+            .leaderboard-header .btn:active {
+                background: var(--primary-orange-dark);
+                transform: scale(0.98);
+            }
+            
+            /* Ensure button text is always visible */
+            .leaderboard-header .btn i {
+                margin-right: 0.5rem;
+                font-size: 1rem;
             }
         }
         
