@@ -252,6 +252,9 @@ async function initializeProfilePage() {
             // Load user statistics
             await loadUserStatistics();
             
+            // Load learning goals
+            loadLearningGoals();
+            
             // Hide loading state and show profile
             hideLoadingState();
             
@@ -859,7 +862,254 @@ function getCurrentStreak() {
 
 // Profile editing functionality removed - automatic refresh implemented
 
-// Profile saving functionality removed - automatic refresh implemented
+// Manual refresh function for refresh button
+async function refreshProfileData() {
+    console.log('=== MANUAL PROFILE DATA REFRESH ===');
+    try {
+        // Refresh profile display with latest database data
+        await updateProfileDisplay();
+        
+        // Refresh statistics with latest lesson data
+        await loadUserStatistics();
+        
+        // Refresh learning goals
+        loadLearningGoals();
+        
+        // Refresh goals display
+        const storedGoals = localStorage.getItem('learningGoals');
+        if (storedGoals) {
+            const goals = JSON.parse(storedGoals);
+            updateGoalsDisplay(goals);
+        }
+        
+        console.log('Profile data manually refreshed from database');
+        showSuccessMessage('Profile data refreshed successfully!');
+        
+    } catch (error) {
+        console.error('Error in manual profile refresh:', error);
+        showErrorMessage('Failed to refresh profile data');
+    }
+}
+
+// Learning Goals Management
+async function saveLearningGoals() {
+    console.log('=== SAVING LEARNING GOALS ===');
+    
+    try {
+        // Get form values
+        const dailyGoal = document.getElementById('dailyGoal').value;
+        const weeklyLessons = document.getElementById('weeklyLessons').value;
+        const targetStreak = document.getElementById('targetStreak').value;
+        const motivation = document.getElementById('motivation').value;
+        const learningStyle = document.getElementById('learningStyle').value;
+        
+        console.log('Learning goals form values:', {
+            dailyGoal,
+            weeklyLessons,
+            targetStreak,
+            motivation,
+            learningStyle
+        });
+        
+        // Validate required fields
+        if (!dailyGoal || !weeklyLessons || !targetStreak || !learningStyle) {
+            showErrorMessage('Please fill in all required fields');
+            return;
+        }
+        
+        // Create goals object
+        const learningGoals = {
+            dailyGoal: parseInt(dailyGoal),
+            weeklyLessons: parseInt(weeklyLessons),
+            targetStreak: parseInt(targetStreak),
+            motivation: motivation.trim(),
+            learningStyle: learningStyle,
+            updatedAt: new Date().toISOString()
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('learningGoals', JSON.stringify(learningGoals));
+        console.log('Learning goals saved to localStorage:', learningGoals);
+        
+        // Save to Supabase if authenticated
+        if (window.currentUser && typeof UserProgressManager !== 'undefined') {
+            try {
+                console.log('Saving learning goals to Supabase...');
+                
+                // Update user profile with learning goals
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .update({
+                        learning_goals: learningGoals,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', window.currentUser.id);
+                
+                if (error) {
+                    console.error('Error saving goals to Supabase:', error);
+                    throw error;
+                }
+                
+                console.log('Learning goals saved to Supabase:', data);
+                
+            } catch (error) {
+                console.error('Failed to save goals to Supabase:', error);
+                // Continue with localStorage as fallback
+            }
+        }
+        
+        // Update the goals display section
+        updateGoalsDisplay(learningGoals);
+        
+        // Show success message
+        showSuccessMessage('Learning goals saved successfully!');
+        
+        // Log the saved goals
+        console.log('Learning goals saved successfully:', learningGoals);
+        
+    } catch (error) {
+        console.error('Error saving learning goals:', error);
+        showErrorMessage('Failed to save learning goals. Please try again.');
+    }
+}
+
+// Load learning goals from storage
+function loadLearningGoals() {
+    console.log('Loading learning goals...');
+    
+    try {
+        // Try to load from localStorage first
+        const storedGoals = localStorage.getItem('learningGoals');
+        if (storedGoals) {
+            const goals = JSON.parse(storedGoals);
+            console.log('Loaded learning goals from localStorage:', goals);
+            
+            // Populate form fields
+            populateGoalsForm(goals);
+            return;
+        }
+        
+        // If no localStorage data, try to load from Supabase
+        if (window.currentUser && typeof UserProgressManager !== 'undefined') {
+            loadGoalsFromSupabase();
+        }
+        
+    } catch (error) {
+        console.error('Error loading learning goals:', error);
+    }
+}
+
+// Load goals from Supabase
+async function loadGoalsFromSupabase() {
+    try {
+        console.log('Loading learning goals from Supabase...');
+        
+        const profileData = await UserProgressManager.getUserProfile(window.currentUser.id);
+        if (profileData && profileData.learning_goals) {
+            console.log('Learning goals from Supabase:', profileData.learning_goals);
+            
+            // Populate form fields
+            populateGoalsForm(profileData.learning_goals);
+            
+            // Save to localStorage for offline access
+            localStorage.setItem('learningGoals', JSON.stringify(profileData.learning_goals));
+        }
+        
+    } catch (error) {
+        console.error('Error loading goals from Supabase:', error);
+    }
+}
+
+// Populate goals form with data
+function populateGoalsForm(goals) {
+    console.log('Populating goals form with:', goals);
+    
+    const dailyGoalSelect = document.getElementById('dailyGoal');
+    const weeklyLessonsSelect = document.getElementById('weeklyLessons');
+    const targetStreakSelect = document.getElementById('targetStreak');
+    const motivationTextarea = document.getElementById('motivation');
+    const learningStyleSelect = document.getElementById('learningStyle');
+    
+    if (dailyGoalSelect && goals.dailyGoal) {
+        dailyGoalSelect.value = goals.dailyGoal.toString();
+    }
+    
+    if (weeklyLessonsSelect && goals.weeklyLessons) {
+        weeklyLessonsSelect.value = goals.weeklyLessons.toString();
+    }
+    
+    if (targetStreakSelect && goals.targetStreak) {
+        targetStreakSelect.value = goals.targetStreak.toString();
+    }
+    
+    if (motivationTextarea && goals.motivation) {
+        motivationTextarea.value = goals.motivation;
+    }
+    
+    if (learningStyleSelect && goals.learningStyle) {
+        learningStyleSelect.value = goals.learningStyle;
+    }
+    
+    // Also update the goals display section
+    updateGoalsDisplay(goals);
+    
+    console.log('Goals form populated successfully');
+}
+
+// Update the goals display section
+function updateGoalsDisplay(goals) {
+    console.log('Updating goals display with:', goals);
+    
+    // Update goal values
+    const dailyGoalDisplay = document.getElementById('dailyGoalDisplay');
+    const weeklyLessonsDisplay = document.getElementById('weeklyLessonsDisplay');
+    const targetStreakDisplay = document.getElementById('targetStreakDisplay');
+    const learningStyleDisplay = document.getElementById('learningStyleDisplay');
+    const motivationDisplay = document.getElementById('motivationDisplay');
+    const motivationText = document.getElementById('motivationText');
+    
+    // Update daily goal
+    if (dailyGoalDisplay && goals.dailyGoal) {
+        const minutes = goals.dailyGoal;
+        if (minutes >= 60) {
+            const hours = minutes / 60;
+            dailyGoalDisplay.textContent = hours === 1 ? '1 hour' : `${hours} hours`;
+        } else {
+            dailyGoalDisplay.textContent = `${minutes} minutes`;
+        }
+    }
+    
+    // Update weekly lessons
+    if (weeklyLessonsDisplay && goals.weeklyLessons) {
+        weeklyLessonsDisplay.textContent = `${goals.weeklyLessons} lessons`;
+    }
+    
+    // Update target streak
+    if (targetStreakDisplay && goals.targetStreak) {
+        targetStreakDisplay.textContent = `${goals.targetStreak} days`;
+    }
+    
+    // Update learning style
+    if (learningStyleDisplay && goals.learningStyle) {
+        const styleMap = {
+            'visual': 'Visual',
+            'auditory': 'Auditory',
+            'kinesthetic': 'Kinesthetic',
+            'mixed': 'Mixed'
+        };
+        learningStyleDisplay.textContent = styleMap[goals.learningStyle] || goals.learningStyle;
+    }
+    
+    // Update motivation display
+    if (motivationDisplay && motivationText && goals.motivation && goals.motivation.trim()) {
+        motivationText.textContent = goals.motivation.trim();
+        motivationDisplay.style.display = 'block';
+    } else if (motivationDisplay) {
+        motivationDisplay.style.display = 'none';
+    }
+    
+    console.log('Goals display updated successfully');
+}
 
 // Force refresh user data from Supabase
 async function forceRefreshUserData() {
@@ -1051,6 +1301,8 @@ window.forceRefreshUserData = forceRefreshUserData;
 window.debugUserData = debugUserData;
 window.forceCreateProfile = forceCreateProfile;
 window.refreshStatistics = refreshStatistics;
+window.refreshProfileData = refreshProfileData;
+window.saveLearningGoals = saveLearningGoals;
 
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {

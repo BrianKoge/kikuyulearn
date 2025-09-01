@@ -209,7 +209,7 @@ function getLessonData(lessonId) {
             duration: 12,
             points: 20,
             kikuyu: 'Nĩ mũndũ mũũru',
-            english: 'I am a good person',
+            english: 'I am a bad person',
             audio: 'sentence-structure.mp3',
             explanation: 'Kikuyu sentence structure follows a Subject-Verb-Object pattern. "Nĩ" is a copula (linking verb) meaning "is/am/are".',
             relatedPhrases: [
