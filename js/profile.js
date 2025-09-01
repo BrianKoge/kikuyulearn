@@ -5,6 +5,22 @@ console.log('Profile.js loaded successfully!');
 let currentUserProfile = null;
 let initializationComplete = false;
 
+// Try to load profile from localStorage immediately
+(function() {
+    const storedProfile = localStorage.getItem('userProfile');
+    if (storedProfile) {
+        try {
+            const parsedProfile = JSON.parse(storedProfile);
+            if (parsedProfile && parsedProfile.id) {
+                currentUserProfile = parsedProfile;
+                console.log('Immediately loaded profile from localStorage:', currentUserProfile);
+            }
+        } catch (e) {
+            console.error('Error parsing stored profile on load:', e);
+        }
+    }
+})();
+
 // Check if user is authenticated
 function isUserAuthenticated() {
     // Check multiple sources for user authentication
@@ -47,6 +63,25 @@ async function initializeProfilePage() {
             
             // Show loading state
             showLoadingState();
+            
+            // First, try to load profile from localStorage if available
+            const storedProfile = localStorage.getItem('userProfile');
+            if (storedProfile) {
+                try {
+                    const parsedProfile = JSON.parse(storedProfile);
+                    if (parsedProfile && parsedProfile.id) {
+                        currentUserProfile = parsedProfile;
+                        console.log('Loaded existing profile from localStorage:', currentUserProfile);
+                        // Update display immediately
+                        updateProfileDisplay();
+                        // Mark initialization as complete
+                        initializationComplete = true;
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error parsing stored profile:', e);
+                }
+            }
             
             // Wait for currentUser to be loaded with longer timeout for online deployments
             let attempts = 0;
@@ -95,6 +130,8 @@ async function initializeProfilePage() {
                                     updated_at: new Date().toISOString()
                                 };
                                 console.log('Created profile immediately from localStorage user data:', currentUserProfile);
+                                // Save to localStorage
+                                localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
                             }
                             
                             break;
@@ -112,45 +149,52 @@ async function initializeProfilePage() {
             if (!window.currentUser) {
                 console.log('No user found in window.currentUser, trying Supabase auth session...');
                 try {
-                    const supabaseClient = initializeSupabase();
-                    if (supabaseClient) {
-                        const { data: { user }, error } = await supabaseClient.auth.getUser();
-                        if (user && !error) {
-                            window.currentUser = user;
-                            console.log('Loaded user from Supabase auth session:', user);
-                            
-                            // Create profile immediately when user is loaded from Supabase
-                            if (!currentUserProfile) {
-                                console.log('Creating profile immediately from Supabase auth user data...');
-                                const userData = user;
+                    // Check if Supabase is available
+                    if (typeof initializeSupabase === 'function') {
+                        const supabaseClient = initializeSupabase();
+                        if (supabaseClient) {
+                            const { data: { user }, error } = await supabaseClient.auth.getUser();
+                            if (user && !error) {
+                                window.currentUser = user;
+                                console.log('Loaded user from Supabase auth session:', user);
                                 
-                                // Extract full_name from multiple possible locations
-                                let displayName = '';
-                                if (userData.full_name) {
-                                    displayName = userData.full_name;
-                                } else if (userData.user_metadata && userData.user_metadata.full_name) {
-                                    displayName = userData.user_metadata.full_name;
-                                } else if (userData.email) {
-                                    displayName = userData.email.split('@')[0];
-                                } else {
-                                    displayName = 'User';
+                                // Create profile immediately when user is loaded from Supabase
+                                if (!currentUserProfile) {
+                                    console.log('Creating profile immediately from Supabase auth user data...');
+                                    const userData = user;
+                                    
+                                    // Extract full_name from multiple possible locations
+                                    let displayName = '';
+                                    if (userData.full_name) {
+                                        displayName = userData.full_name;
+                                    } else if (userData.user_metadata && userData.user_metadata.full_name) {
+                                        displayName = userData.user_metadata.full_name;
+                                    } else if (userData.email) {
+                                        displayName = userData.email.split('@')[0];
+                                    } else {
+                                        displayName = 'User';
+                                    }
+                                    
+                                    // Trim whitespace
+                                    displayName = displayName.trim();
+                                    
+                                    currentUserProfile = {
+                                        id: userData.id,
+                                        email: userData.email,
+                                        full_name: displayName,
+                                        points: userData.points || 0,
+                                        avatar_url: null,
+                                        created_at: new Date().toISOString(),
+                                        updated_at: new Date().toISOString()
+                                    };
+                                    console.log('Created profile immediately from Supabase auth user data:', currentUserProfile);
+                                    // Save to localStorage
+                                    localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
                                 }
-                                
-                                // Trim whitespace
-                                displayName = displayName.trim();
-                                
-                                currentUserProfile = {
-                                    id: userData.id,
-                                    email: userData.email,
-                                    full_name: displayName,
-                                    points: userData.points || 0,
-                                    avatar_url: null,
-                                    created_at: new Date().toISOString(),
-                                    updated_at: new Date().toISOString()
-                                };
-                                console.log('Created profile immediately from Supabase auth user data:', currentUserProfile);
                             }
                         }
+                    } else {
+                        console.log('Supabase not available yet');
                     }
                 } catch (authError) {
                     console.error('Error getting user from Supabase auth:', authError);
@@ -192,10 +236,18 @@ async function initializeProfilePage() {
                     updated_at: new Date().toISOString()
                 };
                 console.log('Created profile from current user data:', currentUserProfile);
+                // Save to localStorage
+                localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
             }
             
             // Update profile display
             updateProfileDisplay();
+            
+            // Ensure profile is saved to localStorage
+            if (currentUserProfile) {
+                localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
+                console.log('Profile saved to localStorage after initialization');
+            }
             
             // Load user statistics
             await loadUserStatistics();
@@ -263,6 +315,35 @@ function hideLoadingState() {
 // Load user profile from Supabase
 async function loadUserProfile() {
     try {
+        // Check if UserProgressManager is available
+        if (typeof UserProgressManager === 'undefined') {
+            console.log('UserProgressManager not available yet, waiting...');
+            // Wait a bit and try again
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (typeof UserProgressManager === 'undefined') {
+                console.log('UserProgressManager still not available, using fallback profile creation');
+                // Create profile from current user data without Supabase
+                if (window.currentUser) {
+                    const userData = window.currentUser;
+                    const displayName = userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User';
+                    
+                    currentUserProfile = {
+                        id: userData.id,
+                        email: userData.email,
+                        full_name: displayName.trim(),
+                        points: userData.points || 0,
+                        avatar_url: null,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    };
+                    console.log('Created fallback profile from current user data:', currentUserProfile);
+                    // Save to localStorage
+                    localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
+                    return;
+                }
+            }
+        }
+
         // Try to get authenticated user from multiple sources
         let supabaseUser = null;
         
@@ -306,6 +387,8 @@ async function loadUserProfile() {
                         updated_at: userProfile.updated_at
                     };
                     console.log('Profile loaded from Supabase:', currentUserProfile);
+                    // Save to localStorage
+                    localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
                 } else {
                     console.log('No profile found in Supabase, creating new profile...');
                     // Create profile if it doesn't exist
@@ -322,7 +405,14 @@ async function loadUserProfile() {
                     };
                     
                     // Save profile to Supabase
-                    await createUserProfile(currentUserProfile);
+                    if (typeof createUserProfile === 'function') {
+                        await createUserProfile(currentUserProfile);
+                    } else {
+                        console.log('createUserProfile function not available, skipping Supabase save');
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
                 }
                 
                 console.log('User profile loaded successfully:', currentUserProfile);
@@ -342,11 +432,29 @@ async function loadUserProfile() {
                     updated_at: new Date().toISOString()
                 };
                 console.log('Using fallback profile data:', currentUserProfile);
+                // Save to localStorage
+                localStorage.setItem('userProfile', JSON.stringify(currentUserProfile));
             }
         } else {
             console.log('No authenticated user found, loading from localStorage...');
             // No authenticated user, load from localStorage
             loadFromLocalStorage();
+        }
+        
+        // Also try to load from localStorage if we have a profile stored there
+        if (!currentUserProfile) {
+            const storedProfile = localStorage.getItem('userProfile');
+            if (storedProfile) {
+                try {
+                    const parsedProfile = JSON.parse(storedProfile);
+                    if (parsedProfile && parsedProfile.id) {
+                        currentUserProfile = parsedProfile;
+                        console.log('Loaded profile from localStorage:', currentUserProfile);
+                    }
+                } catch (e) {
+                    console.error('Error parsing stored profile:', e);
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading user profile:', error);
@@ -761,7 +869,10 @@ window.debugUserData = debugUserData;
 // Initialize profile page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Profile.js: DOM Content Loaded');
-    initializeProfilePage();
+    // Add a small delay to ensure all scripts are loaded
+    setTimeout(() => {
+        initializeProfilePage();
+    }, 100);
 });
 
 // Also try to initialize when window loads (for cases where DOMContentLoaded fires too early)
@@ -769,6 +880,9 @@ window.addEventListener('load', function() {
     console.log('Profile.js: Window loaded');
     if (!initializationComplete) {
         console.log('Re-initializing profile page from window load event');
-        initializeProfilePage();
+        // Add a small delay to ensure all scripts are loaded
+        setTimeout(() => {
+            initializeProfilePage();
+        }, 100);
     }
 });
