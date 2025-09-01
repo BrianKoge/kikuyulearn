@@ -97,6 +97,22 @@ async function initializeProfilePage() {
             
             console.log('After loadUserProfile - currentUserProfile:', currentUserProfile);
             
+            // If profile loading failed, try to create a profile from the current user data
+            if (!currentUserProfile && window.currentUser) {
+                console.log('Profile loading failed, creating profile from current user data...');
+                const userData = window.currentUser;
+                currentUserProfile = {
+                    id: userData.id,
+                    email: userData.email,
+                    full_name: userData.full_name || userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'User',
+                    points: userData.points || 0,
+                    avatar_url: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                console.log('Created profile from current user data:', currentUserProfile);
+            }
+            
             // Update profile display
             updateProfileDisplay();
             
@@ -202,8 +218,8 @@ async function loadUserProfile() {
                     currentUserProfile = {
                         id: supabaseUser.id,
                         email: userProfile.email || supabaseUser.email,
-                        full_name: userProfile.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
-                        points: userProfile.total_score || 0,
+                        full_name: userProfile.full_name || supabaseUser.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+                        points: userProfile.total_score || supabaseUser.points || 0,
                         avatar_url: userProfile.avatar_url,
                         created_at: userProfile.created_at,
                         updated_at: userProfile.updated_at
@@ -212,13 +228,13 @@ async function loadUserProfile() {
                 } else {
                     console.log('No profile found in Supabase, creating new profile...');
                     // Create profile if it doesn't exist
-                    const displayName = supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
+                    const displayName = supabaseUser.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
                     
                     currentUserProfile = {
                         id: supabaseUser.id,
                         email: supabaseUser.email,
                         full_name: displayName,
-                        points: 0,
+                        points: supabaseUser.points || 0,
                         avatar_url: null,
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
@@ -233,13 +249,13 @@ async function loadUserProfile() {
             } catch (error) {
                 console.error('Failed to load profile from Supabase:', error);
                 // Use the authenticated user data as fallback
-                const displayName = supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
+                const displayName = supabaseUser.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User';
                 
                 currentUserProfile = {
                     id: supabaseUser.id,
                     email: supabaseUser.email,
                     full_name: displayName,
-                    points: 0,
+                    points: supabaseUser.points || 0,
                     avatar_url: null,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
@@ -337,6 +353,7 @@ function updateProfileDisplay() {
     let displayName = '';
     let userEmail = '';
     
+    // Check for full_name in multiple locations
     if (userData.full_name) {
         displayName = userData.full_name;
     } else if (userData.user_metadata && userData.user_metadata.full_name) {
@@ -347,11 +364,15 @@ function updateProfileDisplay() {
         displayName = 'User';
     }
     
+    // Check for email
     if (userData.email) {
         userEmail = userData.email;
     } else {
         userEmail = 'user@example.com';
     }
+    
+    // Trim any whitespace from display name
+    displayName = displayName.trim();
     
     console.log('Extracted display name:', displayName, 'and email:', userEmail);
     
