@@ -14,6 +14,26 @@
             background: linear-gradient(135deg, var(--light-gray) 0%, #e9ecef 100%);
         }
         
+        /* Sign Out Button Styling */
+        .sign-out-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+            color: white !important;
+            border-radius: 25px !important;
+            padding: 12px 24px !important;
+            margin-top: 10px !important;
+            border: none !important;
+            font-weight: 600 !important;
+            text-align: center !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3) !important;
+        }
+        
+        .sign-out-btn:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
+        }
+        
         .leaderboard-header {
             background: var(--white);
             border-radius: 15px;
@@ -338,11 +358,10 @@
             </div>
             
             <div class="nav-menu" id="navMenu">
-                <a href="../index.html" class="nav-link" onclick="closeMenu()">Home</a>
                 <a href="Lessons.html" class="nav-link" onclick="closeMenu()">Lessons</a>
                 <a href="leaderboard.html" class="nav-link" onclick="closeMenu()">Leaderboard</a>
                 <a href="Profile.html" class="nav-link" onclick="closeMenu()">Profile</a>
-                <button class="btn btn-outline mobile-btn" onclick="signOut(); closeMenu();">Sign Out</button>
+                <a href="#" class="nav-link sign-out-btn" onclick="signOut(); closeMenu();">Sign Out</a>
             </div>
             
             <div class="nav-buttons">
