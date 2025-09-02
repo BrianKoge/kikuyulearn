@@ -3,7 +3,7 @@
 A modern web platform dedicated to preserving and sharing the rich Kikuyu culture and language for future generations.
 
 ## 🚀 Live Demo
-[Your Netlify URL will be here]
+https://kikuyu-learn.netlify.app/
 
 ## ✨ Features
 
