@@ -1051,6 +1051,18 @@ input[type="file"] + small {
         padding: 1.25rem;
         border-radius: 10px;
     }
+    
+    .recording-section {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    
+    .recording-section .btn {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1095,6 +1107,18 @@ input[type="file"] + small {
     .lesson-card {
         padding: 1rem;
         border-radius: 8px;
+    }
+    
+    .recording-section {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .recording-section .btn {
+        width: 100%;
+        max-width: 180px;
+        justify-content: center;
     }
     
     .progress-bar {
@@ -1153,6 +1177,12 @@ input[type="file"] + small {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     border-color: var(--primary-orange);
+}
+
+.lesson-card .btn {
+    display: block;
+    margin: 0 auto;
+    margin-top: 1rem;
 }
 
 .lesson-header {
@@ -1369,6 +1399,7 @@ input[type="file"] + small {
     justify-content: center;
     margin-bottom: 1rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .audio-practice-controls .btn {
@@ -1427,6 +1458,11 @@ input[type="file"] + small {
 .exercise-card h4 {
     color: var(--secondary-black);
     margin-bottom: 1rem;
+}
+
+.exercise-card .btn {
+    display: block;
+    margin: 0 auto;
 }
 
 .exercise-input {
@@ -1488,13 +1524,16 @@ input[type="file"] + small {
 .lesson-actions {
     display: flex;
     gap: 1rem;
-    justify-content: flex-end;
+    justify-content: center;
     padding-top: 1rem;
     border-top: 2px solid #e9ecef;
 }
 
 .recording-section {
     margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-sm {
@@ -3436,11 +3475,12 @@ input[type="file"] + small {
     .lesson-actions {
         flex-direction: column;
         gap: 0.75rem;
-        align-items: stretch;
+        align-items: center;
     }
     
     .lesson-actions .btn {
         width: 100%;
+        max-width: 300px;
         justify-content: center;
         padding: 0.875rem 1.5rem;
         font-size: 1rem;
@@ -3577,6 +3617,7 @@ input[type="file"] + small {
         padding: 0.75rem 1.25rem;
         font-size: 0.95rem;
         border-radius: 8px;
+        max-width: 280px;
     }
     
     /* Container adjustments */
