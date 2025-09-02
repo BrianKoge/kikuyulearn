@@ -1,6 +1,98 @@
 // Lesson functionality for Kikuyulearn
 console.log('Lesson.js loaded successfully!');
 
+// Audio file mapping for lessons - base paths
+const audioFileBasePaths = {
+    // Basic greetings and common phrases
+    'wĩ-mwega': 'wi_mwega.mp3',
+    'ũrĩ-mwega': 'uri_mwega.mp3',
+    'nĩ-mwega': 'ni_mwega.mp3',
+    'ũkĩĩ': 'ukii.mp3',
+    
+    // Family members
+    'mũtumia': 'mutumia.mp3',
+    'mũthuuri': 'muthuuri.mp3',
+    'mwana': 'mwana.mp3',
+    'mũtumia-wa-nyũmba': 'mutumia_wa_nyumba.mp3',
+    'mũthuuri-wa-nyũmba': 'muthuuri_wa_nyumba.mp3',
+    
+    // Numbers and counting
+    'ĩmwe-igĩrĩ-ĩthatũ-inya-ĩthano': 'imwe__igiri__ithatu__inya_ithano.mp3',
+    'ĩthathatũ': 'ithathatu.mp3',
+    'mũgwanja': 'mugwanja.mp3',
+    'inyanya': 'inyanya.mp3',
+    
+    // Colors
+    'njerũ-njiru-njegũ': 'njeru,_njiru,_njegu.mp3',
+    'njũgũna': 'njuguna.mp3',
+    'njũgũ': 'njugu.mp3',
+    'njũgũnyũ': 'njugunyu.mp3',
+    
+    // Grammar and sentence structure
+    'nĩ-mũndũ-mũũru': 'ni_mundu_muuru.mp3',
+    'nĩ-mũtumia': 'ni_mutumia.mp3',
+    'nĩ-mũthuuri': 'ni_muthuuri.mp3',
+    'nĩ-mwana': 'ni_mwana.mp3',
+    
+    // Verbs and actions
+    'nĩkũrĩa': 'arikuria.mp3',
+    'ũrĩkũrĩa': 'urikuria.mp3',
+    'arĩkũrĩa': 'arikuria.mp3',
+    'tũrĩkũrĩa': 'turikuria.mp3',
+    
+    // Culture and traditions
+    'irua': 'irua.mp3',
+    'kĩama': 'kiama.mp3',
+    'mũgumo': 'mugumo.mp3',
+    'gĩkũyũ': 'gikuyu.mp3',
+    
+    // Respect and elders
+    'mũkũrũ': 'mukuru.mp3',
+    'mũkũrũ-wa-nyũmba': 'mukuru_wa_nyumba.mp3',
+    'mũkũrũ-wa-kĩama': 'mukuru_wa_kiama.mp3',
+    'ũtũũro': 'utuuro.mp3',
+    
+    // Daily conversations
+    'ũkaa': 'ukaa.mp3',
+    'nĩkaa-kũrĩa': 'nikaa_kuria.mp3',
+    'ũũka-rĩngĩ': 'uuka_ringi.mp3',
+    
+    // Market and commerce
+    'nĩ-kĩĩ-gĩu': 'ni_kii_giu.mp3',
+    'nĩ-gĩa-kũũ': 'ni_gia_kuu.mp3',
+    'ũngĩheria': 'ungiheria.mp3'
+};
+
+// Function to get the correct audio path based on current page location
+function getAudioPath(audioKey) {
+    if (!audioFileBasePaths[audioKey]) {
+        console.error('Audio key not found:', audioKey);
+        return null;
+    }
+    
+    const basePath = audioFileBasePaths[audioKey];
+    const currentPath = window.location.pathname;
+    
+    // If we're in the Html folder, go up one level to reach assets
+    if (currentPath.includes('/Html/')) {
+        return `../assets/${basePath}`;
+    }
+    // If we're at the root level, use assets directly
+    else {
+        return `assets/${basePath}`;
+    }
+}
+
+// Audio files object that dynamically resolves paths
+const audioFiles = new Proxy({}, {
+    get: function(target, prop) {
+        if (prop in audioFileBasePaths) {
+            return getAudioPath(prop);
+        }
+        return undefined;
+    }
+});
+
 // Start lesson function
 function startLesson(lessonId) {
     console.log('startLesson called with:', lessonId);
@@ -77,16 +169,29 @@ function showLessonModal(lessonId) {
                 </div>
                 
                 <div class="lesson-content">
-                    <div class="lesson-section">
-                        <h3><i class="fas fa-volume-up"></i> Pronunciation</h3>
-                        <div class="pronunciation-card">
-                            <div class="kikuyu-text">${lesson.kikuyu}</div>
-                            <div class="english-text">${lesson.english}</div>
-                            <button class="btn btn-primary" onclick="playAudio('${lesson.audio}')">
+                                    <div class="lesson-section">
+                    <h3><i class="fas fa-volume-up"></i> Pronunciation</h3>
+                    <div class="pronunciation-card">
+                        <div class="kikuyu-text">${lesson.kikuyu}</div>
+                        <div class="english-text">${lesson.english}</div>
+                        <div class="audio-main-controls">
+                            <button class="btn btn-primary audio-btn" id="main-audio-btn" onclick="playLessonAudio('${lesson.audioKey}')">
                                 <i class="fas fa-play"></i> Listen
+                            </button>
+                            <button class="btn btn-outline stop-audio-btn" id="stop-audio-btn" onclick="stopCurrentAudio()" style="display: none;">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                        </div>
+                        <div class="audio-controls">
+                            <button class="btn btn-sm btn-outline" onclick="playAudioSlow('${lesson.audioKey}')">
+                                <i class="fas fa-slow-motion"></i> Slow
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="repeatAudio('${lesson.audioKey}')">
+                                <i class="fas fa-redo"></i> Repeat
                             </button>
                         </div>
                     </div>
+                </div>
                     
                     <div class="lesson-section">
                         <h3><i class="fas fa-lightbulb"></i> Explanation</h3>
@@ -130,7 +235,7 @@ function showLessonModal(lessonId) {
     initializeLessonProgress(lessonId);
 }
 
-// Get lesson data
+// Get lesson data with updated audio keys
 function getLessonData(lessonId) {
     const lessons = {
         'vocab-1': {
@@ -142,12 +247,12 @@ function getLessonData(lessonId) {
             points: 10,
             kikuyu: 'Wĩ mwega?',
             english: 'How are you?',
-            audio: 'wĩ-mwega.mp3',
+            audioKey: 'wĩ-mwega',
             explanation: 'This is the most common greeting in Kikuyu. "Wĩ" means "you are" and "mwega" means "good/well". It\'s used to ask someone how they are doing.',
             relatedPhrases: [
-                { kikuyu: 'Nĩ mwega', english: 'I am fine' },
-                { kikuyu: 'Ũrĩ mwega?', english: 'Are you well?' },
-                { kikuyu: 'Ũkĩĩ?', english: 'How are you?' }
+                { kikuyu: 'Nĩ mwega', english: 'I am fine', audioKey: 'nĩ-mwega' },
+                { kikuyu: 'Ũrĩ mwega?', english: 'Are you well?', audioKey: 'ũrĩ-mwega' },
+                { kikuyu: 'Ũkĩĩ?', english: 'How are you?', audioKey: 'ũkĩĩ' }
             ]
         },
         'vocab-2': {
@@ -159,12 +264,12 @@ function getLessonData(lessonId) {
             points: 15,
             kikuyu: 'Mũtumia',
             english: 'Wife/Woman',
-            audio: 'mutumia.mp3',
+            audioKey: 'mũtumia',
             explanation: 'In Kikuyu culture, family is very important. "Mũtumia" refers to a married woman or wife. The word is also used to refer to women in general.',
             relatedPhrases: [
-                { kikuyu: 'Mũthuuri', english: 'Husband/Man' },
-                { kikuyu: 'Mwana', english: 'Child' },
-                { kikuyu: 'Mũtumia wa nyũmba', english: 'Housewife' }
+                { kikuyu: 'Mũthuuri', english: 'Husband/Man', audioKey: 'mũthuuri' },
+                { kikuyu: 'Mwana', english: 'Child', audioKey: 'mwana' },
+                { kikuyu: 'Mũtumia wa nyũmba', english: 'Housewife', audioKey: 'mũtumia-wa-nyũmba' }
             ]
         },
         'vocab-3': {
@@ -176,12 +281,12 @@ function getLessonData(lessonId) {
             points: 12,
             kikuyu: 'Ĩmwe, Igĩrĩ, Ithatũ, Inya, Ithano',
             english: 'One, Two, Three, Four, Five',
-            audio: 'numbers-1-5.mp3',
+            audioKey: 'ĩmwe-igĩrĩ-ĩthatũ-inya-ĩthano',
             explanation: 'Numbers in Kikuyu follow a specific pattern. Learning numbers is essential for daily communication, especially when shopping or discussing quantities.',
             relatedPhrases: [
-                { kikuyu: 'Ithathatũ', english: 'Six' },
-                { kikuyu: 'Mũgwanja', english: 'Seven' },
-                { kikuyu: 'Inyanya', english: 'Eight' }
+                { kikuyu: 'Ithathatũ', english: 'Six', audioKey: 'ĩthathatũ' },
+                { kikuyu: 'Mũgwanja', english: 'Seven', audioKey: 'mũgwanja' },
+                { kikuyu: 'Inyanya', english: 'Eight', audioKey: 'inyanya' }
             ]
         },
         'vocab-4': {
@@ -193,12 +298,12 @@ function getLessonData(lessonId) {
             points: 15,
             kikuyu: 'Njerũ, Njiru, Njegũ',
             english: 'White, Black, Red',
-            audio: 'colors.mp3',
+            audioKey: 'njerũ-njiru-njegũ',
             explanation: 'Colors in Kikuyu are used not just for describing objects, but also have cultural significance. Each color can represent different emotions or states.',
             relatedPhrases: [
-                { kikuyu: 'Njũgũna', english: 'Green' },
-                { kikuyu: 'Njũgũ', english: 'Blue' },
-                { kikuyu: 'Njũgũnyũ', english: 'Yellow' }
+                { kikuyu: 'Njũgũna', english: 'Green', audioKey: 'njũgũna' },
+                { kikuyu: 'Njũgũ', english: 'Blue', audioKey: 'njũgũ' },
+                { kikuyu: 'Njũgũnyũ', english: 'Yellow', audioKey: 'njũgũnyũ' }
             ]
         },
         'grammar-1': {
@@ -210,12 +315,12 @@ function getLessonData(lessonId) {
             points: 20,
             kikuyu: 'Nĩ mũndũ mũũru',
             english: 'I am a bad person',
-            audio: 'sentence-structure.mp3',
+            audioKey: 'nĩ-mũndũ-mũũru',
             explanation: 'Kikuyu sentence structure follows a Subject-Verb-Object pattern. "Nĩ" is a copula (linking verb) meaning "is/am/are".',
             relatedPhrases: [
-                { kikuyu: 'Nĩ mũtumia', english: 'I am a woman' },
-                { kikuyu: 'Nĩ mũthuuri', english: 'I am a man' },
-                { kikuyu: 'Nĩ mwana', english: 'I am a child' }
+                { kikuyu: 'Nĩ mũtumia', english: 'I am a woman', audioKey: 'nĩ-mũtumia' },
+                { kikuyu: 'Nĩ mũthuuri', english: 'I am a man', audioKey: 'nĩ-mũthuuri' },
+                { kikuyu: 'Nĩ mwana', english: 'I am a child', audioKey: 'nĩ-mwana' }
             ]
         },
         'grammar-2': {
@@ -227,12 +332,12 @@ function getLessonData(lessonId) {
             points: 25,
             kikuyu: 'Nĩkũrĩa ndũũ',
             english: 'I am eating food',
-            audio: 'verb-conjugation.mp3',
+            audioKey: 'nĩkũrĩa',
             explanation: 'Kikuyu verbs change form based on tense, person, and number. The prefix "Nĩ-" indicates present tense for first person singular.',
             relatedPhrases: [
-                { kikuyu: 'Ũrĩkũrĩa', english: 'You are eating' },
-                { kikuyu: 'Arĩkũrĩa', english: 'He/She is eating' },
-                { kikuyu: 'Tũrĩkũrĩa', english: 'We are eating' }
+                { kikuyu: 'Ũrĩkũrĩa', english: 'You are eating', audioKey: 'ũrĩkũrĩa' },
+                { kikuyu: 'Arĩkũrĩa', english: 'He/She is eating', audioKey: 'arĩkũrĩa' },
+                { kikuyu: 'Tũrĩkũrĩa', english: 'We are eating', audioKey: 'tũrĩkũrĩa' }
             ]
         },
         'culture-1': {
@@ -244,12 +349,12 @@ function getLessonData(lessonId) {
             points: 25,
             kikuyu: 'Irua',
             english: 'Circumcision Ceremony',
-            audio: 'irua.mp3',
+            audioKey: 'irua',
             explanation: 'Irua is one of the most important traditional ceremonies in Kikuyu culture. It marks the transition from childhood to adulthood and is a rite of passage.',
             relatedPhrases: [
-                { kikuyu: 'Kĩama', english: 'Council of elders' },
-                { kikuyu: 'Mũgumo', english: 'Sacred fig tree' },
-                { kikuyu: 'Gĩkũyũ', english: 'Kikuyu person' }
+                { kikuyu: 'Kĩama', english: 'Council of elders', audioKey: 'kĩama' },
+                { kikuyu: 'Mũgumo', english: 'Sacred fig tree', audioKey: 'mũgumo' },
+                { kikuyu: 'Gĩkũyũ', english: 'Kikuyu person', audioKey: 'gĩkũyũ' }
             ]
         },
         'culture-2': {
@@ -261,12 +366,12 @@ function getLessonData(lessonId) {
             points: 18,
             kikuyu: 'Mũkũrũ',
             english: 'Elder/Respected person',
-            audio: 'elders-respect.mp3',
+            audioKey: 'mũkũrũ',
             explanation: 'Respect for elders is fundamental in Kikuyu culture. Elders are seen as repositories of wisdom and tradition.',
             relatedPhrases: [
-                { kikuyu: 'Mũkũrũ wa nyũmba', english: 'Family elder' },
-                { kikuyu: 'Mũkũrũ wa kĩama', english: 'Council elder' },
-                { kikuyu: 'Ũtũũro', english: 'Respect' }
+                { kikuyu: 'Mũkũrũ wa nyũmba', english: 'Family elder', audioKey: 'mũkũrũ-wa-nyũmba' },
+                { kikuyu: 'Mũkũrũ wa kĩama', english: 'Council elder', audioKey: 'mũkũrũ-wa-kĩama' },
+                { kikuyu: 'Ũtũũro', english: 'Respect', audioKey: 'ũtũũro' }
             ]
         },
         'conv-1': {
@@ -278,12 +383,12 @@ function getLessonData(lessonId) {
             points: 22,
             kikuyu: 'Ũkũĩ? Nĩ mwega',
             english: 'How are you? I am fine',
-            audio: 'daily-conversation.mp3',
+            audioKey: 'ũkĩĩ',
             explanation: 'Daily conversations in Kikuyu often begin with greetings and inquiries about well-being. This shows care and respect for others.',
             relatedPhrases: [
-                { kikuyu: 'Ũkaa?', english: 'Where are you going?' },
-                { kikuyu: 'Nĩkaa kũrĩa', english: 'I am going to eat' },
-                { kikuyu: 'Ũũka rĩngĩ', english: 'Come again' }
+                { kikuyu: 'Ũkaa?', english: 'Where are you going?', audioKey: 'ũkaa' },
+                { kikuyu: 'Nĩkaa kũrĩa', english: 'I am going to eat', audioKey: 'nĩkaa-kũrĩa' },
+                { kikuyu: 'Ũũka rĩngĩ', english: 'Come again', audioKey: 'ũũka-rĩngĩ' }
             ]
         },
         'conv-2': {
@@ -295,12 +400,12 @@ function getLessonData(lessonId) {
             points: 28,
             kikuyu: 'Nĩ kĩĩ gĩu?',
             english: 'How much is this?',
-            audio: 'market-conversation.mp3',
+            audioKey: 'nĩ-kĩĩ-gĩu',
             explanation: 'Market conversations involve negotiation and bargaining. Learning these phrases helps in daily commerce and trade.',
             relatedPhrases: [
-                { kikuyu: 'Nĩ gĩa kũũ', english: 'It is expensive' },
-                { kikuyu: 'Ũngĩheria', english: 'Can you reduce the price?' },
-                { kikuyu: 'Nĩ mwega', english: 'It is good' }
+                { kikuyu: 'Nĩ gĩa kũũ', english: 'It is expensive', audioKey: 'nĩ-gĩa-kũũ' },
+                { kikuyu: 'Ũngĩheria', english: 'Can you reduce the price?', audioKey: 'ũngĩheria' },
+                { kikuyu: 'Nĩ mwega', english: 'It is good', audioKey: 'nĩ-mwega' }
             ]
         }
     };
@@ -308,7 +413,7 @@ function getLessonData(lessonId) {
     return lessons[lessonId];
 }
 
-// Generate practice exercises
+// Generate practice exercises with audio
 function generatePracticeExercises(lesson) {
     return `
         <div class="exercise-card">
@@ -324,9 +429,17 @@ function generatePracticeExercises(lesson) {
         <div class="exercise-card">
             <h4>Listen and Repeat</h4>
             <p>Listen to the pronunciation and practice saying it aloud.</p>
-            <button class="btn btn-outline" onclick="playAudio('${lesson.audio}')">
-                <i class="fas fa-play"></i> Listen Again
-            </button>
+            <div class="audio-practice-controls">
+                <button class="btn btn-primary" onclick="playLessonAudio('${lesson.audioKey}')">
+                    <i class="fas fa-play"></i> Listen
+                </button>
+                <button class="btn btn-outline" onclick="playAudioSlow('${lesson.audioKey}')">
+                    <i class="fas fa-slow-motion"></i> Slow
+                </button>
+                <button class="btn btn-outline" onclick="repeatAudio('${lesson.audioKey}')">
+                    <i class="fas fa-redo"></i> Repeat
+                </button>
+            </div>
             <div class="recording-section">
                 <button class="btn btn-primary" onclick="startRecording()">
                     <i class="fas fa-microphone"></i> Record
@@ -339,14 +452,14 @@ function generatePracticeExercises(lesson) {
     `;
 }
 
-// Generate related phrases
+// Generate related phrases with audio buttons
 function generateRelatedPhrases(lesson) {
     return lesson.relatedPhrases.map(phrase => `
         <div class="phrase-card">
             <div class="phrase-kikuyu">${phrase.kikuyu}</div>
             <div class="phrase-english">${phrase.english}</div>
-            <button class="btn btn-sm btn-outline" onclick="playAudio('${phrase.kikuyu.toLowerCase().replace(/\s+/g, '-')}.mp3')">
-                <i class="fas fa-play"></i>
+            <button class="btn btn-sm btn-outline" onclick="playLessonAudio('${phrase.audioKey}')">
+                <i class="fas fa-play"></i> Listen
             </button>
         </div>
     `).join('');
@@ -371,11 +484,200 @@ function checkAnswer(button, correctAnswer) {
     }
 }
 
-// Play audio (simulated)
+// Audio playback functionality
+let currentAudio = null;
+let audioContext = null;
+
+// Play lesson audio
+function playLessonAudio(audioKey) {
+    if (!audioKey || !audioFiles[audioKey]) {
+        console.error('Audio not found for key:', audioKey);
+        showErrorMessage('Audio file not found');
+        return;
+    }
+    
+    const audioPath = audioFiles[audioKey];
+    console.log('=== AUDIO DEBUG INFO ===');
+    console.log('Audio key:', audioKey);
+    console.log('Resolved path:', audioPath);
+    console.log('Current page location:', window.location.href);
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Base path from mapping:', audioFileBasePaths[audioKey]);
+    console.log('========================');
+    
+    // Stop any currently playing audio
+    stopCurrentAudio();
+    
+    try {
+        // Create new audio element
+        currentAudio = new Audio(audioPath);
+        
+        // Update UI to show audio is playing
+        updateAudioButtonState(true);
+        
+        // Add event listeners
+        currentAudio.addEventListener('loadeddata', () => {
+            console.log('✅ Audio loaded successfully:', audioPath);
+            showSuccessMessage('Playing audio...');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('❌ Audio error:', e);
+            console.error('Audio error details:', {
+                error: e,
+                audioPath: audioPath,
+                audioKey: audioKey,
+                currentLocation: window.location.href,
+                resolvedPath: audioPath,
+                basePath: audioFileBasePaths[audioKey]
+            });
+            showErrorMessage('Failed to load audio file');
+            updateAudioButtonState(false);
+        });
+        
+        currentAudio.addEventListener('ended', () => {
+            console.log('Audio finished playing');
+            currentAudio = null;
+            updateAudioButtonState(false);
+        });
+        
+        // Play the audio
+        currentAudio.play().catch(error => {
+            console.error('Error playing audio:', error);
+            showErrorMessage('Failed to play audio');
+            updateAudioButtonState(false);
+        });
+        
+    } catch (error) {
+        console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+        updateAudioButtonState(false);
+    }
+}
+
+// Play audio at slower speed
+function playAudioSlow(audioKey) {
+    if (!audioKey || !audioFiles[audioKey]) {
+        showErrorMessage('Audio file not found');
+        return;
+    }
+    
+    const audioPath = audioFiles[audioKey];
+    console.log('Playing audio slowly:', audioPath);
+    
+    // Stop any currently playing audio
+    stopCurrentAudio();
+    
+    try {
+        currentAudio = new Audio(audioPath);
+        currentAudio.playbackRate = 0.7; // 70% speed
+        
+        currentAudio.addEventListener('loadeddata', () => {
+            showSuccessMessage('Playing audio slowly...');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('Audio error:', e);
+            showErrorMessage('Failed to load audio file');
+        });
+        
+        currentAudio.addEventListener('ended', () => {
+            currentAudio = null;
+        });
+        
+        currentAudio.play().catch(error => {
+            console.error('Error playing audio:', error);
+            showErrorMessage('Failed to play audio');
+        });
+        
+    } catch (error) {
+        console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+    }
+}
+
+// Repeat audio multiple times
+function repeatAudio(audioKey) {
+    if (!audioKey || !audioFiles[audioKey]) {
+        showErrorMessage('Audio file not found');
+        return;
+    }
+    
+    const audioPath = audioFiles[audioKey];
+    console.log('Repeating audio:', audioPath);
+    
+    // Stop any currently playing audio
+    stopCurrentAudio();
+    
+    try {
+        currentAudio = new Audio(audioPath);
+        currentAudio.loop = true; // Loop the audio
+        
+        currentAudio.addEventListener('loadeddata', () => {
+            showSuccessMessage('Repeating audio... Click stop to end');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('Audio error:', e);
+            showErrorMessage('Failed to load audio file');
+        });
+        
+        // Play the audio
+        currentAudio.play().catch(error => {
+            console.error('Error playing audio:', error);
+            showErrorMessage('Failed to play audio');
+        });
+        
+    } catch (error) {
+        console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+    }
+}
+
+// Update audio button state
+function updateAudioButtonState(isPlaying) {
+    const mainAudioBtn = document.getElementById('main-audio-btn');
+    const stopAudioBtn = document.getElementById('stop-audio-btn');
+    
+    if (mainAudioBtn && stopAudioBtn) {
+        if (isPlaying) {
+            mainAudioBtn.style.display = 'none';
+            stopAudioBtn.style.display = 'inline-flex';
+            mainAudioBtn.classList.add('playing');
+        } else {
+            mainAudioBtn.style.display = 'inline-flex';
+            stopAudioBtn.style.display = 'none';
+            mainAudioBtn.classList.remove('playing');
+        }
+    }
+}
+
+// Stop current audio
+function stopCurrentAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+        console.log('Audio stopped');
+    }
+    
+    // Update UI to show audio is stopped
+    updateAudioButtonState(false);
+}
+
+// Legacy function for backward compatibility
 function playAudio(audioFile) {
-    console.log('Playing audio:', audioFile);
-    // In a real app, this would play actual audio files
-    showSuccessMessage('Audio playing... (simulated)');
+    console.log('Legacy playAudio called with:', audioFile);
+    // Try to find the audio key from the filename
+    const audioKey = Object.keys(audioFiles).find(key => 
+        audioFiles[key].includes(audioFile) || audioFile.includes(key)
+    );
+    
+    if (audioKey) {
+        playLessonAudio(audioKey);
+    } else {
+        showErrorMessage('Audio file not found');
+    }
 }
 
 // Start recording (simulated)
