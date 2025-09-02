@@ -73,12 +73,21 @@ function getAudioPath(audioKey) {
     const basePath = audioFileBasePaths[audioKey];
     const currentPath = window.location.pathname;
     
-    // If we're in the Html folder, go up one level to reach assets
-    if (currentPath.includes('/Html/')) {
+    console.log('=== PATH DEBUG ===');
+    console.log('Current pathname:', currentPath);
+    console.log('Base path:', basePath);
+    
+    // Check for various path patterns that indicate we're in a subdirectory
+    if (currentPath.includes('/html/') || 
+        currentPath.includes('/Html/') || 
+        currentPath.includes('/lessons') ||
+        currentPath.includes('/lesson')) {
+        console.log('Detected subdirectory, using ../assets/');
         return `../assets/${basePath}`;
     }
     // If we're at the root level, use assets directly
     else {
+        console.log('Detected root level, using assets/');
         return `assets/${basePath}`;
     }
 }
@@ -531,8 +540,16 @@ function playLessonAudio(audioKey) {
                 resolvedPath: audioPath,
                 basePath: audioFileBasePaths[audioKey]
             });
-            showErrorMessage('Failed to load audio file');
-            updateAudioButtonState(false);
+            
+            // Try alternative path if the first one fails
+            const alternativePath = tryAlternativeAudioPath(audioKey);
+            if (alternativePath && alternativePath !== audioPath) {
+                console.log('🔄 Trying alternative path:', alternativePath);
+                retryAudioWithPath(alternativePath, audioKey);
+            } else {
+                showErrorMessage('Failed to load audio file');
+                updateAudioButtonState(false);
+            }
         });
         
         currentAudio.addEventListener('ended', () => {
@@ -550,6 +567,74 @@ function playLessonAudio(audioKey) {
         
     } catch (error) {
         console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+        updateAudioButtonState(false);
+    }
+}
+
+// Function to try alternative audio paths
+function tryAlternativeAudioPath(audioKey) {
+    const basePath = audioFileBasePaths[audioKey];
+    const currentPath = window.location.pathname;
+    
+    // Try different path combinations
+    const alternativePaths = [
+        `../assets/${basePath}`,
+        `assets/${basePath}`,
+        `./assets/${basePath}`,
+        `/assets/${basePath}`,
+        `../../assets/${basePath}`
+    ];
+    
+    // Return the first path that's different from the current one
+    for (const path of alternativePaths) {
+        if (path !== audioFiles[audioKey]) {
+            return path;
+        }
+    }
+    
+    return null;
+}
+
+// Function to retry audio with a different path
+function retryAudioWithPath(audioPath, audioKey) {
+    try {
+        // Stop current audio if any
+        stopCurrentAudio();
+        
+        // Create new audio element with alternative path
+        currentAudio = new Audio(audioPath);
+        
+        // Update UI to show audio is playing
+        updateAudioButtonState(true);
+        
+        // Add event listeners
+        currentAudio.addEventListener('loadeddata', () => {
+            console.log('✅ Audio loaded successfully with alternative path:', audioPath);
+            showSuccessMessage('Playing audio...');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('❌ Alternative path also failed:', audioPath);
+            showErrorMessage('Failed to load audio file');
+            updateAudioButtonState(false);
+        });
+        
+        currentAudio.addEventListener('ended', () => {
+            console.log('Audio finished playing');
+            currentAudio = null;
+            updateAudioButtonState(false);
+        });
+        
+        // Play the audio
+        currentAudio.play().catch(error => {
+            console.error('Error playing audio with alternative path:', error);
+            showErrorMessage('Failed to play audio');
+            updateAudioButtonState(false);
+        });
+        
+    } catch (error) {
+        console.error('Error creating audio element with alternative path:', error);
         showErrorMessage('Failed to create audio element');
         updateAudioButtonState(false);
     }
@@ -578,7 +663,15 @@ function playAudioSlow(audioKey) {
         
         currentAudio.addEventListener('error', (e) => {
             console.error('Audio error:', e);
-            showErrorMessage('Failed to load audio file');
+            
+            // Try alternative path if the first one fails
+            const alternativePath = tryAlternativeAudioPath(audioKey);
+            if (alternativePath && alternativePath !== audioPath) {
+                console.log('🔄 Trying alternative path for slow audio:', alternativePath);
+                retrySlowAudioWithPath(alternativePath, audioKey);
+            } else {
+                showErrorMessage('Failed to load audio file');
+            }
         });
         
         currentAudio.addEventListener('ended', () => {
@@ -592,6 +685,42 @@ function playAudioSlow(audioKey) {
         
     } catch (error) {
         console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+    }
+}
+
+// Function to retry slow audio with a different path
+function retrySlowAudioWithPath(audioPath, audioKey) {
+    try {
+        // Stop current audio if any
+        stopCurrentAudio();
+        
+        // Create new audio element with alternative path
+        currentAudio = new Audio(audioPath);
+        currentAudio.playbackRate = 0.7; // 70% speed
+        
+        currentAudio.addEventListener('loadeddata', () => {
+            console.log('✅ Slow audio loaded successfully with alternative path:', audioPath);
+            showSuccessMessage('Playing audio slowly...');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('❌ Alternative path also failed for slow audio:', audioPath);
+            showErrorMessage('Failed to load audio file');
+        });
+        
+        currentAudio.addEventListener('ended', () => {
+            currentAudio = null;
+        });
+        
+        // Play the audio
+        currentAudio.play().catch(error => {
+            console.error('Error playing slow audio with alternative path:', error);
+            showErrorMessage('Failed to play audio');
+        });
+        
+    } catch (error) {
+        console.error('Error creating slow audio element with alternative path:', error);
         showErrorMessage('Failed to create audio element');
     }
 }
@@ -619,7 +748,15 @@ function repeatAudio(audioKey) {
         
         currentAudio.addEventListener('error', (e) => {
             console.error('Audio error:', e);
-            showErrorMessage('Failed to load audio file');
+            
+            // Try alternative path if the first one fails
+            const alternativePath = tryAlternativeAudioPath(audioKey);
+            if (alternativePath && alternativePath !== audioPath) {
+                console.log('🔄 Trying alternative path for repeat audio:', alternativePath);
+                retryRepeatAudioWithPath(alternativePath, audioKey);
+            } else {
+                showErrorMessage('Failed to load audio file');
+            }
         });
         
         // Play the audio
@@ -630,6 +767,38 @@ function repeatAudio(audioKey) {
         
     } catch (error) {
         console.error('Error creating audio element:', error);
+        showErrorMessage('Failed to create audio element');
+    }
+}
+
+// Function to retry repeat audio with a different path
+function retryRepeatAudioWithPath(audioPath, audioKey) {
+    try {
+        // Stop current audio if any
+        stopCurrentAudio();
+        
+        // Create new audio element with alternative path
+        currentAudio = new Audio(audioPath);
+        currentAudio.loop = true; // Loop the audio
+        
+        currentAudio.addEventListener('loadeddata', () => {
+            console.log('✅ Repeat audio loaded successfully with alternative path:', audioPath);
+            showSuccessMessage('Repeating audio... Click stop to end');
+        });
+        
+        currentAudio.addEventListener('error', (e) => {
+            console.error('❌ Alternative path also failed for repeat audio:', audioPath);
+            showErrorMessage('Failed to load audio file');
+        });
+        
+        // Play the audio
+        currentAudio.play().catch(error => {
+            console.error('Error playing repeat audio with alternative path:', error);
+            showErrorMessage('Failed to play audio');
+        });
+        
+    } catch (error) {
+        console.error('Error creating repeat audio element with alternative path:', error);
         showErrorMessage('Failed to create audio element');
     }
 }
@@ -1581,6 +1750,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Lesson.js: DOM Content Loaded');
     initializeLessonsPage();
     
+    // Debug audio paths on page load
+    debugAudioPaths();
+    
     // Also listen for page load events (when page is refreshed)
     window.addEventListener('load', function() {
         console.log('Page loaded - auto-refreshing progress...');
@@ -1589,6 +1761,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000); // Wait 2 seconds after page load
     });
 });
+
+// Function to debug audio paths on page load
+function debugAudioPaths() {
+    console.log('=== AUDIO PATH DEBUG ON PAGE LOAD ===');
+    console.log('Current location:', window.location.href);
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Current hostname:', window.location.hostname);
+    
+    // Test a few audio paths
+    const testKeys = ['wĩ-mwega', 'mũtumia', 'ĩmwe-igĩrĩ-ĩthatũ-inya-ĩthano'];
+    testKeys.forEach(key => {
+        const path = audioFiles[key];
+        console.log(`Audio key "${key}" resolves to: ${path}`);
+    });
+    
+    // Test alternative paths for one audio file
+    if (testKeys.length > 0) {
+        const testKey = testKeys[0];
+        const basePath = audioFileBasePaths[testKey];
+        console.log('Testing alternative paths for:', testKey);
+        console.log('Base path:', basePath);
+        console.log('Possible paths:', [
+            `../assets/${basePath}`,
+            `assets/${basePath}`,
+            `./assets/${basePath}`,
+            `/assets/${basePath}`,
+            `../../assets/${basePath}`
+        ]);
+    }
+    console.log('=====================================');
+}
 
 // Auto-sync when user leaves the page
 window.addEventListener('beforeunload', async function() {
