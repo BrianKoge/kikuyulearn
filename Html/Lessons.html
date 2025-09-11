@@ -24,17 +24,37 @@
         }
         
         .category-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            background: var(--gradient-card);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-bounce);
             cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform var(--transition-normal);
         }
         
         .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-orange);
+        }
+        
+        .category-card:hover::before {
+            transform: scaleX(1);
         }
         
         .category-icon {
@@ -54,15 +74,18 @@
         }
         
         .category-card h3 {
-            font-size: 1.3rem;
+            font-size: var(--text-xl);
             font-weight: 600;
             color: var(--secondary-black);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--space-sm);
+            line-height: 1.3;
         }
         
         .category-card p {
             color: var(--medium-gray);
-            margin-bottom: 1rem;
+            margin-bottom: var(--space-lg);
+            line-height: 1.6;
+            font-size: var(--text-base);
         }
         
         .progress-bar {
@@ -92,17 +115,37 @@
         }
         
         .lesson-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            background: var(--gradient-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-bounce);
             cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .lesson-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform var(--transition-normal);
         }
         
         .lesson-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-orange);
+        }
+        
+        .lesson-card:hover::before {
+            transform: scaleX(1);
         }
         
         .lesson-header {
@@ -148,16 +191,18 @@
         }
         
         .lesson-title {
-            font-size: 1.1rem;
+            font-size: var(--text-lg);
             font-weight: 600;
             color: var(--secondary-black);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--space-sm);
+            line-height: 1.3;
         }
         
         .lesson-description {
             color: var(--medium-gray);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-lg);
+            line-height: 1.6;
         }
         
         .lesson-meta {
@@ -526,6 +571,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/script-simple.js?v=1.9"></script>
     <script src="../js/lesson.js?v=1.8"></script>
+    <script src="../js/enhanced-ui.js"></script>
     
     <script>
         // Mobile menu functionality

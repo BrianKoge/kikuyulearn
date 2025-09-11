@@ -111,12 +111,12 @@
                         
                         <div class="form-group">
                             <label for="name">Full Name *</label>
-                            <input type="text" id="name" name="name" required>
+                            <input type="text" id="name" name="name" required placeholder="Enter your full name">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" required>
+                            <input type="email" id="email" name="email" required placeholder="Enter your email address">
                         </div>
                         
                         <div class="form-group">
@@ -192,10 +192,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/script-simple.js"></script>
+    <script src="../js/enhanced-ui.js"></script>
     <script>
 
         
-        // Contact form handling
+        // Enhanced contact form handling
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -203,11 +204,28 @@
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             
-            // Show success message
-            showSuccessMessage('Thank you for your message! We\'ll get back to you within 24 hours.');
+            // Add loading state to submit button
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
             
-            // Reset form
-            this.reset();
+            // Simulate form submission (replace with actual API call)
+            setTimeout(() => {
+                // Show success message using enhanced UI
+                if (window.enhancedUI) {
+                    window.enhancedUI.showMessage('Thank you for your message! We\'ll get back to you within 24 hours.', 'success');
+                } else {
+                    showSuccessMessage('Thank you for your message! We\'ll get back to you within 24 hours.');
+                }
+                
+                // Reset form
+                this.reset();
+                
+                // Restore button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 1500);
         });
 
                 // Paystack integration
